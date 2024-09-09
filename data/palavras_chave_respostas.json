@@ -1,6 +1,7 @@
 {
     "pagamento": "Você pode pagar usando cartão ou boleto.",
     "login": "Se você está com problemas de login, tente resetar sua senha.",
+    
     "ola": "Olá, como posso te ajudar?",
     "oi": "Oi, como posso te ajudar?",
     "olá": "Olá, como posso te ajudar?",
@@ -18,7 +19,7 @@
     "hey": "Hey! Como posso te ajudar?",
     "yo": "Yo! Como posso te ajudar?",
     "saudações": "Saudações! Como posso te ajudar?",
-    
+
     "fios": "Temos uma variedade de fios elétricos disponíveis. Qual você precisa?",
     "cabos": "Precisa de cabos elétricos? Podemos te ajudar com isso!",
     "disjuntores": "Temos disjuntores de alta qualidade. Qual tipo você precisa?",
@@ -36,5 +37,5 @@
     "orçamento": "Precisa de um orçamento para produtos ou serviços elétricos? Posso te ajudar.",
     "entrega": "Oferecemos entrega para todos os nossos produtos. Qual o seu endereço?",
     "estoque": "Deixe-me verificar o estoque para o produto desejado.",
-    "assistência técnica": "Precisando de assistência técnica elétrica? Estou à disposição para agendar."
+    "assistência técnica": "Precisando de assistência técnica elétrica? Estou à disposição para ajudar."
 }

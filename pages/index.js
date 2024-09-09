@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { FaMicrophone } from 'react-icons/fa'; // Importa o ícone de microfone
 
 export default function Home() {
   const [pergunta, setPergunta] = useState('');
   const [conversas, setConversas] = useState([]);
   const [reconhecedor, setReconhecedor] = useState(null);
+  const [ouvindo, setOuvindo] = useState(false);
+  const circuloRef = useRef(null);
 
   const enviarPergunta = async () => {
     if (!pergunta) return;
@@ -31,31 +34,56 @@ export default function Home() {
     }
   };
 
-  const iniciarReconhecimentoVoz = () => {
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-      const reconhecimento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      reconhecimento.lang = 'pt-BR';
-      reconhecimento.interimResults = false;
-      reconhecimento.maxAlternatives = 1;
-
-      reconhecimento.onresult = (event) => {
-        const resultado = event.results[0][0].transcript;
-        setPergunta(resultado);
-        enviarPergunta();
-      };
-
-      reconhecimento.onerror = (event) => {
-        console.error('Erro no reconhecimento de voz:', event.error);
-      };
-
-      reconhecimento.onend = () => {
-        console.log('Reconhecimento de voz finalizado');
-      };
-
-      reconhecimento.start();
-      setReconhecedor(reconhecimento);
+  const iniciarOuPararReconhecimentoVoz = () => {
+    if (ouvindo) {
+      // Parar o reconhecimento de voz
+      reconhecedor.stop();
+      setOuvindo(false);
+      if (circuloRef.current) {
+        circuloRef.current.classList.remove('ouvindo');
+      }
     } else {
-      alert('Reconhecimento de voz não é suportado neste navegador.');
+      // Iniciar o reconhecimento de voz
+      if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+        const reconhecimento = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        reconhecimento.lang = 'pt-BR';
+        reconhecimento.interimResults = false;
+        reconhecimento.maxAlternatives = 1;
+
+        reconhecimento.onresult = (event) => {
+          const resultado = event.results[0][0].transcript;
+          setPergunta(resultado);
+          enviarPergunta();
+        };
+
+        reconhecimento.onerror = (event) => {
+          console.error('Erro no reconhecimento de voz:', event.error);
+          setOuvindo(false);
+          if (circuloRef.current) {
+            circuloRef.current.classList.remove('ouvindo');
+          }
+        };
+
+        reconhecimento.onstart = () => {
+          setOuvindo(true);
+          if (circuloRef.current) {
+            circuloRef.current.classList.add('ouvindo');
+          }
+        };
+
+        reconhecimento.onend = () => {
+          console.log('Reconhecimento de voz finalizado');
+          setOuvindo(false);
+          if (circuloRef.current) {
+            circuloRef.current.classList.remove('ouvindo');
+          }
+        };
+
+        setReconhecedor(reconhecimento);
+        reconhecimento.start();
+      } else {
+        alert('Reconhecimento de voz não é suportado neste navegador.');
+      }
     }
   };
 
@@ -69,8 +97,7 @@ export default function Home() {
           {conversas.map((conversa, index) => (
             <div
               key={index}
-              className={`mb-2 flex ${conversa.tipo === 'usuario' ? 'justify-end' : 'justify-start'
-                }`}
+              className={`mb-2 flex ${conversa.tipo === 'usuario' ? 'justify-end' : 'justify-start'}`}
             >
               <div
                 className={`p-2 rounded-lg max-w-[80%] text-sm ${conversa.tipo === 'usuario'
@@ -101,10 +128,15 @@ export default function Home() {
             Enviar
           </button>
           <button
-            onClick={iniciarReconhecimentoVoz}
-            className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm"
+            onClick={iniciarOuPararReconhecimentoVoz}
+            className="relative p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm flex items-center justify-center"
           >
-            🎙️ Falar
+            <FaMicrophone size={24} />
+            <div
+              ref={circuloRef}
+              className={`absolute inset-0 border-2 rounded-full ${ouvindo ? 'border-green-300' : 'border-transparent'} transition-transform duration-300`}
+              style={{ transform: ouvindo ? 'scale(1.3)' : 'scale(1)' }}
+            />
           </button>
         </div>
       </div>

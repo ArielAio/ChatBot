@@ -1,30 +1,45 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import natural from 'natural'; // Biblioteca para processamento de texto
 
 const filePath = path.join(process.cwd(), 'data', 'palavras_chave_respostas.json');
 
-/// Carregar dados do arquivo JSON
+// Carregar dados do arquivo JSON
 const carregarDados = async () => {
-    const filePath = path.join(process.cwd(), 'data', 'palavras_chave_respostas.json');
-    const jsonData = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(jsonData);
+    try {
+        const jsonData = await fs.readFile(filePath, 'utf-8');
+        return JSON.parse(jsonData);
+    } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        return {};
+    }
 };
 
 // Salvar dados no arquivo JSON
 const salvarDados = async (dados) => {
-    const filePath = path.join(process.cwd(), 'data', 'palavras_chave_respostas.json');
-    const jsonString = JSON.stringify(dados, null, 2);
-    await fs.writeFile(filePath, jsonString);
+    try {
+        const jsonString = JSON.stringify(dados, null, 2);
+        await fs.writeFile(filePath, jsonString);
+    } catch (error) {
+        console.error("Erro ao salvar dados:", error);
+    }
 };
 
-// Calcular pontuação de relevância
+// Calcular pontuação de relevância usando TF-IDF
 const calcularPontuacao = (pergunta, palavrasChaveRespostas) => {
-    const pontuacoes = {};
+    const tfidf = new natural.TfIdf();
 
+    // Adicionar cada chave e resposta ao TF-IDF
     for (const chave in palavrasChaveRespostas) {
-        const regex = new RegExp(`\\b${chave}\\b`, 'gi');
-        const correspondencias = pergunta.match(regex);
-        pontuacoes[chave] = (correspondencias || []).length;
+        tfidf.addDocument(chave);
+    }
+
+    tfidf.addDocument(pergunta);
+
+    // Calcular pontuações para cada chave
+    const pontuacoes = {};
+    for (const chave in palavrasChaveRespostas) {
+        pontuacoes[chave] = tfidf.tfidf(chave, tfidf.documents.length - 1);
     }
 
     return pontuacoes;
