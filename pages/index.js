@@ -60,20 +60,20 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white w-full max-w-2xl p-6 rounded-lg shadow-lg flex flex-col justify-between h-full">
-        <h1 className="text-2xl font-bold mb-4 text-center">🤖 Chatbot</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-2">
+      <div className="bg-white w-full max-w-md p-4 rounded-lg shadow-md flex flex-col justify-between h-full">
+        <h1 className="text-xl font-bold text-center mb-2">🤖 Chatbot</h1>
 
         {/* Janela de Chat */}
-        <div className="flex-1 overflow-y-auto mb-4 p-4 bg-gray-50 rounded-lg">
+        <div className="flex-1 overflow-y-auto mb-2 p-2 bg-gray-50 rounded-lg">
           {conversas.map((conversa, index) => (
             <div
               key={index}
-              className={`mb-4 flex ${conversa.tipo === 'usuario' ? 'justify-end' : 'justify-start'
+              className={`mb-2 flex ${conversa.tipo === 'usuario' ? 'justify-end' : 'justify-start'
                 }`}
             >
               <div
-                className={`p-3 rounded-lg max-w-xs ${conversa.tipo === 'usuario'
+                className={`p-2 rounded-lg max-w-[80%] text-sm ${conversa.tipo === 'usuario'
                     ? 'bg-blue-500 text-white'
                     : 'bg-gray-300 text-black'
                   }`}
@@ -84,25 +84,25 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Campo de entrada e botão */}
-        <div className="flex items-center space-x-4">
+        {/* Campo de entrada e botões */}
+        <div className="flex items-center space-x-2">
           <input
             type="text"
             value={pergunta}
             onChange={(e) => setPergunta(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Digite sua pergunta..."
-            className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             onClick={enviarPergunta}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
           >
             Enviar
           </button>
           <button
             onClick={iniciarReconhecimentoVoz}
-            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+            className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm"
           >
             🎙️ Falar
           </button>
