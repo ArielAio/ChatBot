@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FaMicrophone } from 'react-icons/fa'; // Importa o ícone de microfone
+import { FaMicrophone } from 'react-icons/fa';
 
 export default function Home() {
   const [pergunta, setPergunta] = useState('');
@@ -101,8 +101,8 @@ export default function Home() {
             >
               <div
                 className={`p-2 rounded-lg max-w-[80%] text-sm ${conversa.tipo === 'usuario'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-300 text-black'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-300 text-black'
                   }`}
               >
                 {conversa.texto}
