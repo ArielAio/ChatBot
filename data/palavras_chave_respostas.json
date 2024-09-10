@@ -42,7 +42,6 @@
     "suporte técnico": "Precisa de suporte técnico? Posso ajudar com suas questões elétricas.",
     "consultoria": "Oferecemos consultoria para suas necessidades elétricas. Como posso ajudar?",
     "ajuda": "Em que posso te ajudar com nossos produtos elétricos?",
-    
     "instalação de tomadas": "Desative a energia, escolha e prepare o local, instale a caixa, passe e conecte os fios, fixe a tomada e teste.",
     "instalar tomadas": "Desligue a energia, marque e faça o buraco, instale a caixa, passe e conecte os fios, fixe a tomada e teste.",
     "tomadas elétricas": "Escolha um local seguro, prepare o buraco, passe e conecte os fios, fixe a tomada e teste.",
@@ -56,5 +55,15 @@
     "problemas na instalação de tomadas": "Verifique as conexões, teste a tomada e revise o circuito.",
     "ajuda com tomadas": "Consulte o manual da tomada e, se necessário, entre em contato com um profissional.",
     "manual de instalação de tomadas": "Obtenha e siga o manual específico da tomada, e teste após a instalação.",
-    "dicas de instalação de tomadas": "Planeje a localização, garanta a segurança e teste a tomada após a instalação."
+    "dicas de instalação de tomadas": "Planeje a localização, garanta a segurança e teste a tomada após a instalação.",
+
+    
+    "quem é voce": "Eu sou um assistente virtual projetado para ajudar com dúvidas sobre produtos e serviços elétricos. Posso responder perguntas, fornecer informações e ajudar com problemas relacionados.",
+    "o que voce faz": "Eu ajudo com informações sobre produtos elétricos, instalação, manutenção e outros serviços relacionados. Se você tiver dúvidas ou precisar de assistência, é só me perguntar.",
+    "como posso te ajudar": "Você pode me perguntar sobre produtos elétricos, instalação, manutenção, orçamento, suporte técnico e muito mais. Estou aqui para ajudar com qualquer dúvida ou necessidade que você tenha.",
+    "quais sao seus serviços": "Ofereço informações sobre produtos elétricos, assistência com instalação, manutenção, suporte técnico, e consultoria. Também posso ajudar com orçamentos e entrega dos produtos.",
+    "qual e o seu horario de atendimento": "Estou disponível 24 horas por dia, 7 dias por semana. Sempre que você precisar de ajuda, é só me chamar!",
+    "como posso falar com um atendente humano": "Se você precisar falar com um atendente humano, por favor, entre em contato com nosso suporte pelo e-mail [suporte@empresa.com](mailto:suporte@empresa.com) ou pelo telefone (xx) xxxx-xxxx.",
+    "qual e a sua empresa": "Eu sou um assistente da [Nome da Empresa], especializada em produtos e serviços elétricos. Estamos aqui para oferecer o melhor suporte e as melhores soluções para suas necessidades elétricas.",
+    "o que devo fazer se encontrar um problema": "Se você encontrar um problema ou precisar de suporte adicional, entre em contato conosco por e-mail ou telefone, e estaremos prontos para ajudar."
 }
