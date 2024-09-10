@@ -1,73 +1,54 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import natural from 'natural';
+import openai from 'openai';
+import { encode } from 'gpt-3-encoder';
 
-const filePath = path.join(process.cwd(), 'data', 'palavras_chave_respostas.json');
+const client = new openai.OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: "https://chat.maritaca.ai/api",
+});
 
-const carregarDados = async () => {
-    try {
-        const jsonData = await fs.readFile(filePath, 'utf-8');
-        return JSON.parse(jsonData);
-    } catch (error) {
-        console.error("Erro ao carregar dados:", error);
-        return {};
-    }
+const contarTokens = (texto) => {
+    return encode(texto).length;
 };
 
-const salvarDados = async (dados) => {
-    try {
-        const jsonString = JSON.stringify(dados, null, 2);
-        await fs.writeFile(filePath, jsonString);
-    } catch (error) {
-        console.error("Erro ao salvar dados:", error);
-    }
+const truncarResposta = (resposta) => {
+    const pontoFinal = resposta.lastIndexOf('.');
+    return pontoFinal !== -1 ? resposta.substring(0, pontoFinal + 1) : resposta;
 };
 
-const calcularPontuacao = (pergunta, palavrasChaveRespostas) => {
-    const tfidf = new natural.TfIdf();
+const consultarAPI = async (pergunta) => {
+    const messages = [
+        { role: 'system', content: 'Responda em uma frase curta e completa, não ultrapassando 80 tokens.' },
+        { role: 'user', content: pergunta },
+    ];
 
-    for (const chave in palavrasChaveRespostas) {
-        tfidf.addDocument(chave);
-    }
+    const response = await client.chat.completions.create({
+        model: 'sabia-2-small',
+        messages,
+        temperature: 0.1,
+        max_tokens: 80,
+        stop: ['\n', '.', '!'],
+    });
 
-    tfidf.addDocument(pergunta);
-
-    const pontuacoes = {};
-    for (const chave in palavrasChaveRespostas) {
-        pontuacoes[chave] = tfidf.tfidf(chave, tfidf.documents.length - 1);
-    }
-
-    return pontuacoes;
-};
-
-const encontrarMelhorResposta = (pergunta, palavrasChaveRespostas) => {
-    const pontuacoes = calcularPontuacao(pergunta, palavrasChaveRespostas);
-    const melhorChave = Object.keys(pontuacoes).reduce((a, b) => pontuacoes[a] > pontuacoes[b] ? a : b);
-
-    if (!palavrasChaveRespostas[melhorChave]) {
-        const maxPontuacao = Math.max(...Object.values(pontuacoes));
-        const chavesComMaxPontuacao = Object.keys(pontuacoes).filter(chave => pontuacoes[chave] === maxPontuacao);
-        const respostaAleatoria = palavrasChaveRespostas[chavesComMaxPontuacao[Math.floor(Math.random() * chavesComMaxPontuacao.length)]];
-        return respostaAleatoria || "Desculpe, não entendi sua pergunta.";
-    }
-
-    return palavrasChaveRespostas[melhorChave];
+    return truncarResposta(response.choices[0].message.content);
 };
 
 export default async function handler(req, res) {
     if (req.method === 'POST') {
-        const { pergunta, novaResposta, novaPalavraChave } = req.body;
-        let palavrasChaveRespostas = await carregarDados();
+        let { pergunta } = req.body;
 
-        let resposta = encontrarMelhorResposta(pergunta, palavrasChaveRespostas);
-
-        if (resposta === "Desculpe, não entendi sua pergunta." && novaResposta && novaPalavraChave) {
-            palavrasChaveRespostas[novaPalavraChave] = novaResposta;
-            await salvarDados(palavrasChaveRespostas);
-            resposta = "Obrigado, aprendi algo novo!";
+        if (contarTokens(pergunta) > 50) {
+            res.status(400).json({ mensagem: 'A pergunta excede o limite de 50 tokens.' });
+            return;
         }
 
-        res.status(200).json({ resposta });
+        try {
+            const resposta = await consultarAPI(pergunta);
+
+            res.status(200).json({ resposta });
+        } catch (error) {
+            console.error("Erro ao consultar a API:", error);
+            res.status(500).json({ mensagem: 'Erro ao consultar a API.' });
+        }
     } else {
         res.status(405).json({ mensagem: 'Método não permitido.' });
     }
