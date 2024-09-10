@@ -3,7 +3,7 @@ import { FaMicrophone, FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 
 export default function Home() {
   const [pergunta, setPergunta] = useState('');
-  const [conversas, setConversas] = useState([]);
+  const [conversas, setConversas] = useState([{ tipo: 'bot', texto: 'Olá! Como posso ajudar você hoje?' }]);
   const [reconhecedor, setReconhecedor] = useState(null);
   const [ouvindo, setOuvindo] = useState(false);
   const [mute, setMute] = useState(false);
@@ -111,7 +111,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg flex flex-col h-full">
+      <div className="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg flex flex-col h-full max-h-[80vh]">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-semibold text-gray-800">Chatbot</h1>
           <button
@@ -171,6 +171,19 @@ export default function Home() {
           </button>
         </div>
       </div>
+
+      <footer className="mt-4 text-sm text-gray-600">
+        <p>
+          by{' '}
+          <a href="https://www.instagram.com/ayelaio/" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
+            @ArielAio
+          </a>{' '}
+          &{' '}
+          <a href="https://www.instagram.com/gabriel_aguera_/" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
+            @GabrielAguera
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }
