@@ -105,7 +105,6 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // Rolagem automática para o final da conversa
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversas]);
 
@@ -131,8 +130,8 @@ export default function Home() {
             >
               <div
                 className={`p-3 rounded-lg max-w-[75%] text-sm ${conversa.tipo === 'usuario'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-300 text-gray-800'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-300 text-gray-800'
                   }`}
               >
                 {conversa.texto}
@@ -175,11 +174,11 @@ export default function Home() {
       <footer className="mt-4 text-sm text-gray-600">
         <p>
           by{' '}
-          <a href="https://www.instagram.com/ayelaio/" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.linkedin.com/in/ariel-aio/" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
             @ArielAio
           </a>{' '}
           &{' '}
-          <a href="https://www.instagram.com/gabriel_aguera_/" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.linkedin.com/in/gabriel-aguera-baria-435058295/" className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
             @GabrielAguera
           </a>
         </p>
