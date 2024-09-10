@@ -1,10 +1,9 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import natural from 'natural'; // Biblioteca para processamento de texto
+import natural from 'natural';
 
 const filePath = path.join(process.cwd(), 'data', 'palavras_chave_respostas.json');
 
-// Carregar dados do arquivo JSON
 const carregarDados = async () => {
     try {
         const jsonData = await fs.readFile(filePath, 'utf-8');
@@ -15,7 +14,6 @@ const carregarDados = async () => {
     }
 };
 
-// Salvar dados no arquivo JSON
 const salvarDados = async (dados) => {
     try {
         const jsonString = JSON.stringify(dados, null, 2);
@@ -25,18 +23,15 @@ const salvarDados = async (dados) => {
     }
 };
 
-// Calcular pontuação de relevância usando TF-IDF
 const calcularPontuacao = (pergunta, palavrasChaveRespostas) => {
     const tfidf = new natural.TfIdf();
 
-    // Adicionar cada chave e resposta ao TF-IDF
     for (const chave in palavrasChaveRespostas) {
         tfidf.addDocument(chave);
     }
 
     tfidf.addDocument(pergunta);
 
-    // Calcular pontuações para cada chave
     const pontuacoes = {};
     for (const chave in palavrasChaveRespostas) {
         pontuacoes[chave] = tfidf.tfidf(chave, tfidf.documents.length - 1);
@@ -45,7 +40,6 @@ const calcularPontuacao = (pergunta, palavrasChaveRespostas) => {
     return pontuacoes;
 };
 
-// Encontrar a melhor resposta com base na pontuação
 const encontrarMelhorResposta = (pergunta, palavrasChaveRespostas) => {
     const pontuacoes = calcularPontuacao(pergunta, palavrasChaveRespostas);
     const melhorChave = Object.keys(pontuacoes).reduce((a, b) => pontuacoes[a] > pontuacoes[b] ? a : b);
@@ -60,16 +54,13 @@ const encontrarMelhorResposta = (pergunta, palavrasChaveRespostas) => {
     return palavrasChaveRespostas[melhorChave];
 };
 
-// Manipulador de requisições
 export default async function handler(req, res) {
     if (req.method === 'POST') {
         const { pergunta, novaResposta, novaPalavraChave } = req.body;
         let palavrasChaveRespostas = await carregarDados();
 
-        // Encontrar a melhor resposta
         let resposta = encontrarMelhorResposta(pergunta, palavrasChaveRespostas);
 
-        // Caso não tenha uma resposta, pergunte ao usuário por uma nova
         if (resposta === "Desculpe, não entendi sua pergunta." && novaResposta && novaPalavraChave) {
             palavrasChaveRespostas[novaPalavraChave] = novaResposta;
             await salvarDados(palavrasChaveRespostas);
