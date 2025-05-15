@@ -1,17 +1,36 @@
 // Serviço para gerenciar o armazenamento de chats
 import AuthService from './authService';
 
+// Cache para evitar leituras repetidas do localStorage
+let chatsCache = null;
+let lastUserId = null;
+
 const ChatService = {
-  // Obtém todos os chats salvos
+  // Limpar cache quando necessário
+  clearCache: () => {
+    chatsCache = null;
+  },
+  
+  // Obtém todos os chats salvos com cache
   getChats: () => {
     if (typeof window === 'undefined') return [];
     
     // Se houver um usuário logado, tenta buscar chats específicos dele
     const user = AuthService.getCurrentUser();
+    const userId = user?.id || 'anonymous';
     const storageKey = user?.id ? `chats_${user.id}` : 'chats';
     
+    // Usar cache se disponível e o usuário não mudou
+    if (chatsCache && lastUserId === userId) {
+      return chatsCache;
+    }
+    
+    // Atualizar cache
     const chats = localStorage.getItem(storageKey);
-    return chats ? JSON.parse(chats) : [];
+    chatsCache = chats ? JSON.parse(chats) : [];
+    lastUserId = userId;
+    
+    return chatsCache;
   },
 
   // Obtém um chat específico por ID
@@ -22,12 +41,19 @@ const ChatService = {
 
   // Salva um novo chat ou atualiza um existente
   saveChat: (chat) => {
+    if (!chat || !chat.id) {
+      console.error('Tentativa de salvar chat inválido:', chat);
+      return null;
+    }
+    
     const chats = ChatService.getChats();
     const existingIndex = chats.findIndex(c => c.id === chat.id);
     
     if (existingIndex >= 0) {
+      console.log(`Atualizando chat existente: ${chat.id}`);
       chats[existingIndex] = chat;
     } else {
+      console.log(`Adicionando novo chat: ${chat.id}, título: ${chat.title}`);
       chats.push(chat);
     }
     
@@ -35,7 +61,37 @@ const ChatService = {
     const user = AuthService.getCurrentUser();
     const storageKey = user?.id ? `chats_${user.id}` : 'chats';
     
-    localStorage.setItem(storageKey, JSON.stringify(chats));
+    // Atualizar cache
+    chatsCache = chats;
+    lastUserId = user?.id || 'anonymous';
+    
+    // Verificar se há chats duplicados (com mesmo ID)
+    const uniqueIds = new Set();
+    const hasDuplicates = chats.some(c => {
+      if (uniqueIds.has(c.id)) {
+        console.error(`Detectado chat duplicado com ID: ${c.id}`);
+        return true;
+      }
+      uniqueIds.add(c.id);
+      return false;
+    });
+    
+    if (hasDuplicates) {
+      console.warn('Removendo chats duplicados antes de salvar');
+      const uniqueChats = Array.from(chats.reduce((map, chat) => map.set(chat.id, chat), new Map()).values());
+      chatsCache = uniqueChats;
+      
+      // Usar requestAnimationFrame para operações de escrita no localStorage
+      requestAnimationFrame(() => {
+        localStorage.setItem(storageKey, JSON.stringify(uniqueChats));
+      });
+    } else {
+      // Usar requestAnimationFrame para operações de escrita no localStorage
+      requestAnimationFrame(() => {
+        localStorage.setItem(storageKey, JSON.stringify(chats));
+      });
+    }
+    
     return chat;
   },
 
@@ -48,7 +104,14 @@ const ChatService = {
     const user = AuthService.getCurrentUser();
     const storageKey = user?.id ? `chats_${user.id}` : 'chats';
     
-    localStorage.setItem(storageKey, JSON.stringify(chats));
+    // Atualizar cache
+    chatsCache = chats;
+    
+    // Usar requestAnimationFrame para operações de escrita no localStorage
+    requestAnimationFrame(() => {
+      localStorage.setItem(storageKey, JSON.stringify(chats));
+    });
+    
     return true;
   },
 
@@ -60,8 +123,14 @@ const ChatService = {
     const user = AuthService.getCurrentUser();
     const storageKey = user?.id ? `chats_${user.id}` : 'chats';
     
+    // Limpar cache
+    chatsCache = [];
+    
     // Remover os chats do localStorage
-    localStorage.removeItem(storageKey);
+    requestAnimationFrame(() => {
+      localStorage.removeItem(storageKey);
+    });
+    
     return true;
   },
 
@@ -77,7 +146,16 @@ const ChatService = {
 
   // Cria um novo chat
   createChat: (firstMessage = "Nova Conversa") => {
-    const id = Date.now().toString();
+    // Garantir um ID único com prefixo e timestamp
+    const timestamp = Date.now();
+    const id = `chat_${timestamp}`;
+    
+    // Verificar se já existe um chat com este ID
+    const existingChat = ChatService.getChat(id);
+    if (existingChat) {
+      console.warn('Tentativa de criar chat com ID já existente, retornando o existente');
+      return existingChat;
+    }
     
     // Usar o título diretamente se for uma string, ou definir um padrão
     const title = typeof firstMessage === 'string' ? 
@@ -94,6 +172,14 @@ const ChatService = {
       updatedAt: new Date().toISOString(),
     };
     
+    // Verificar se já existem chats com este ID antes de salvar
+    const chats = ChatService.getChats();
+    if (chats.some(chat => chat.id === id)) {
+      console.warn('Chat com mesmo ID já existe na lista, evitando duplicação');
+      return chats.find(chat => chat.id === id);
+    }
+    
+    console.log('Criando novo chat:', id, title);
     ChatService.saveChat(newChat);
     return newChat;
   },

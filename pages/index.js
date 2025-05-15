@@ -1,13 +1,14 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaMicrophone, FaVolumeMute, FaVolumeUp, FaSun, FaMoon, FaPaperPlane, FaRobot, FaUser, FaPlus, FaTrash, FaEdit, FaTimes, FaBrain } from 'react-icons/fa';
 import { useInView } from 'react-intersection-observer';
 import ChatService from '../utils/chatService';
 import MemoryService from '../utils/memoryService';
 import AuthService from '../utils/authService';
-import LoginScreen from '../components/LoginScreen';
-import UserMenu from '../components/UserMenu';
-import LoginStatus from '../components/LoginStatus';
+// Carregamento preguiçoso de componentes
+const LoginScreen = lazy(() => import('../components/LoginScreen'));
+const UserMenu = lazy(() => import('../components/UserMenu'));
+const LoginStatus = lazy(() => import('../components/LoginStatus'));
 
 // Hook personalizado para gerenciar o tema
 function useTheme() {
@@ -40,17 +41,20 @@ function useTheme() {
 
 // Componente de mensagem individual otimizado com memoização
 const Mensagem = React.memo(({ conversa, index }) => {
-  const { ref, inView } = useInView({ triggerOnce: true, rootMargin: '100px' });
+  const { ref, inView } = useInView({ 
+    triggerOnce: true, 
+    rootMargin: '100px',
+    threshold: 0.1
+  });
   
-  // Mensagem vem do bot ou do usuário
   const isBot = conversa.tipo === 'bot';
   
   return (
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: 10 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.3, delay: Math.min(index * 0.1, 0.5) }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+      transition={{ duration: 0.2, delay: Math.min(index * 0.05, 0.3) }}
       className={`mb-3 sm:mb-4 flex ${isBot ? 'justify-start' : 'justify-end'}`}
     >
       <div className={`flex w-[90%] sm:w-[85%] ${isBot ? 'order-2' : 'order-1'}`}>
@@ -82,7 +86,7 @@ const Mensagem = React.memo(({ conversa, index }) => {
 Mensagem.displayName = 'Mensagem';
 
 // Componente de indicador de digitação otimizado
-const TypingIndicator = () => (
+const TypingIndicator = React.memo(() => (
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
@@ -114,19 +118,22 @@ const TypingIndicator = () => (
       </div>
     </div>
   </motion.div>
-);
+));
+
+TypingIndicator.displayName = 'TypingIndicator';
 
 // Componente ChatItem (item da barra lateral)
 const ChatItem = React.memo(({ chat, isActive, onClick, onDelete }) => {
-  const confirmDeleteChat = (e) => {
+  const confirmDeleteChat = useCallback((e) => {
     e.stopPropagation();
     if (confirm("Tem certeza que deseja excluir esta conversa?")) {
       onDelete(chat.id);
     }
-  };
+  }, [chat.id, onDelete]);
   
-  // Verificando se estamos em dispositivo móvel sem usar o state global
-  const isOnMobileDevice = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+  const isOnMobileDevice = useMemo(() => {
+    return typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+  }, []);
   
   return (
     <motion.div
@@ -209,11 +216,24 @@ export default function Home() {
     setUser(userData);
     setIsAuthenticated(true);
     
+    // Verificar se já existem chats para não criar um novo desnecessariamente
+    const existingChats = ChatService.getChats();
+    if (existingChats.length > 0) {
+      console.log('Chats existentes encontrados após login, não criando chat de boas-vindas');
+      return;
+    }
+    
     // Se o usuário fez login com uma conta do Google, mostrar mensagem de boas-vindas
     setTimeout(() => {
       // Criar um novo chat de boas-vindas
       const newChatTitle = userData?.firstName ? `Olá, ${userData.firstName}` : "Bem-vindo";
+      
+      // Bloquear temporariamente outras criações de chat
+      isCreatingChat.current = true;
+      lastCreatedChatRef.current = Date.now();
+      
       const newChat = ChatService.createChat(newChatTitle);
+      console.log('Chat de boas-vindas criado após login:', newChat.id);
       
       // Texto de boas-vindas personalizado com base no tipo de login
       let welcomeText = '';
@@ -241,7 +261,12 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
       // Atualizar o chat atual e a lista de chats
       const updatedChat = ChatService.getChat(newChat.id);
       setChatAtual(updatedChat);
-      setChats(prev => [updatedChat, ...prev.filter(c => c.id !== updatedChat.id)]);
+      setChats(prev => [updatedChat]);
+      
+      // Liberar o bloqueio após um tempo
+      setTimeout(() => {
+        isCreatingChat.current = false;
+      }, 1000);
     }, 500);
   };
 
@@ -253,6 +278,7 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
 
   useEffect(() => {
     if (mounted && isAuthenticated) {
+      console.log('Carregando chats e memórias após autenticação');
       const savedChats = ChatService.getChats();
       setChats(savedChats);
       
@@ -277,26 +303,104 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
       
       // Se houver chats, selecionar o mais recente
       if (savedChats.length > 0) {
+        console.log(`${savedChats.length} chats encontrados, selecionando o mais recente`);
         const sortedChats = [...savedChats].sort((a, b) => 
           new Date(b.createdAt) - new Date(a.createdAt)
         );
         setChatAtual(sortedChats[0]);
       } else {
-        // Caso contrário, criar um novo chat
-        criarNovoChat();
+        // Caso contrário, criar um novo chat apenas se não existirem chats
+        console.log('Nenhum chat encontrado, criando um novo');
+        const createdChat = criarNovoChat();
+        // Verificamos o retorno para garantir que o chat foi realmente criado
+        if (!createdChat) {
+          console.log('Falha ao criar novo chat no useEffect inicial');
+        }
       }
     }
+  // Adicionamos criarNovoChat à lista de dependências para garantir que temos a versão mais atualizada
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted, isAuthenticated, user]);
 
   // Criar um novo chat
-  const criarNovoChat = useCallback(() => {
-    const newChat = ChatService.createChat("Nova conversa");
-    setChats(prev => [newChat, ...prev]);
-    setChatAtual(newChat);
-    setPergunta('');
-    // Foco no input
-    setTimeout(() => inputRef.current?.focus(), 100);
-  }, []);
+  const isCreatingChat = useRef(false);
+  const lastCreatedChatRef = useRef(null);
+  const criarNovoChat = useCallback((titulo = 'Nova conversa') => {
+    // Verificação detalhada para evitar a criação de chats duplicados
+    console.log('Tentativa de criar novo chat. Status:', { 
+      loading, 
+      isCreating: isCreatingChat.current, 
+      lastCreated: lastCreatedChatRef.current 
+    });
+    
+    // 1. Impedir criação durante loading
+    if (loading) {
+      console.log('Bloqueando criação de chat - sistema em loading');
+      return null;
+    }
+    
+    // 2. Verificar se já está criando (proteção contra chamadas rápidas consecutivas)
+    if (isCreatingChat.current) {
+      console.log('Bloqueando criação de chat - já está criando outro chat');
+      return null;
+    }
+    
+    // 3. Verificar timestamp da última criação (proteção contra múltiplos gatilhos do useEffect)
+    const now = Date.now();
+    if (lastCreatedChatRef.current && now - lastCreatedChatRef.current < 2000) {
+      console.log(`Chat criado recentemente (${now - lastCreatedChatRef.current}ms atrás), ignorando solicitação duplicada`);
+      return null;
+    }
+    
+    // Garantir o bloqueio imediato para evitar criações simultâneas
+    isCreatingChat.current = true;
+    
+    // Registrar timestamp desta criação
+    lastCreatedChatRef.current = now;
+    console.log('Criando novo chat:', titulo);
+    
+    try {
+      // Verificar se já existe um chat atual para evitar criação desnecessária
+      if (chatAtual && chats.length > 0 && now - new Date(chatAtual.createdAt).getTime() < 5000) {
+        console.log('Chat atual é muito recente, evitando criação duplicada');
+        isCreatingChat.current = false;
+        return chatAtual;
+      }
+      
+      // Criar o novo chat com ID baseado no timestamp para garantir unicidade
+      const chatId = `chat_${now}`;
+      const newChat = ChatService.createChat(titulo);
+      
+      // Atualizar o estado
+      setChats(prev => {
+        // Verificar se o chat já foi adicionado para evitar duplicação
+        if (prev.some(c => c.id === newChat.id)) {
+          console.log('Chat já existe na lista, evitando duplicação');
+          return prev;
+        }
+        return [newChat, ...prev];
+      });
+      
+      setChatAtual(newChat);
+      setPergunta('');
+      
+      // Foco no input
+      setTimeout(() => inputRef.current?.focus(), 100);
+      
+      // Fecha a sidebar em dispositivos móveis
+      if (isMobile) {
+        setSidebarOpen(false);
+      }
+      
+      console.log('Novo chat criado com sucesso:', newChat.id);
+      return newChat;
+    } finally {
+      // Garantir que o bloqueio será liberado mesmo se ocorrer um erro
+      setTimeout(() => {
+        isCreatingChat.current = false;
+      }, 500);
+    }
+  }, [loading, isMobile, chatAtual, chats]);
 
   // Selecionar um chat
   const selecionarChat = useCallback((chat) => {
@@ -634,7 +738,11 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
 
   // Mostrar tela de login se não estiver autenticado
   if (!isAuthenticated) {
-    return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
+    return (
+      <Suspense fallback={<div className="flex items-center justify-center h-screen">Carregando...</div>}>
+        <LoginScreen onLoginSuccess={handleLoginSuccess} />
+      </Suspense>
+    );
   }
 
   // Animações para elementos da interface
@@ -698,8 +806,20 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={criarNovoChat}
-              className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onClick={(e) => {
+                e.preventDefault();
+                if (!isCreatingChat.current) {
+                  criarNovoChat();
+                } else {
+                  console.log('Bloqueando clique duplicado no botão de novo chat');
+                }
+              }}
+              disabled={isCreatingChat.current || loading}
+              className={`p-2 bg-blue-500 text-white rounded-full ${
+                isCreatingChat.current || loading ? 
+                'opacity-70 cursor-not-allowed' : 
+                'hover:bg-blue-600'
+              } transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500`}
               aria-label="Nova conversa"
             >
               <FaPlus size={16} />
@@ -1010,8 +1130,20 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
           >
             <div className="flex items-center gap-2">
               <button
-                onClick={criarNovoChat}
-                className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full mobile-active touch-target"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (!isCreatingChat.current) {
+                    criarNovoChat();
+                  } else {
+                    console.log('Bloqueando clique duplicado no botão móvel de novo chat');
+                  }
+                }}
+                disabled={isCreatingChat.current || loading}
+                className={`p-2 ${
+                  isCreatingChat.current || loading ? 
+                  'bg-blue-400 opacity-70 cursor-not-allowed' : 
+                  'bg-blue-500 hover:bg-blue-600'
+                } text-white rounded-full mobile-active touch-target`}
                 aria-label="Nova conversa"
               >
                 <FaPlus size={16} />

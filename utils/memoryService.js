@@ -1,25 +1,41 @@
 // Serviço para gerenciar a memória contextual do usuário
 import AuthService from './authService';
 
+// Cache para evitar leituras repetidas do localStorage
+let memoriesCache = null;
+let lastUserId = null;
+
 const MemoryService = {
-  // Obtém todas as memórias salvas
+  // Limpar cache quando necessário
+  clearCache: () => {
+    memoriesCache = null;
+  },
+  
+  // Obtém todas as memórias salvas com cache
   getMemories: () => {
     if (typeof window === 'undefined') return [];
     
     // Se houver um usuário logado, tenta buscar memórias específicas dele
     const user = AuthService.getCurrentUser();
+    const userId = user?.id || 'anonymous';
     const storageKey = user?.id ? `user_memories_${user.id}` : 'user_memories';
     
+    // Usar cache se disponível e o usuário não mudou
+    if (memoriesCache && lastUserId === userId) {
+      return memoriesCache;
+    }
+    
+    // Atualizar cache
     const memories = localStorage.getItem(storageKey);
-    return memories ? JSON.parse(memories) : [];
+    memoriesCache = memories ? JSON.parse(memories) : [];
+    lastUserId = userId;
+    
+    return memoriesCache;
   },
 
   // Salva uma nova memória
   saveMemory: (memory) => {
     const memories = MemoryService.getMemories();
-    
-    // Log para diagnóstico
-    console.log(`Tentativa de salvar memória: ${memory.topic} => ${memory.data} (confiança: ${memory.confidence})`);
     
     // Verificar se já existe uma memória similar
     const existingIndex = memories.findIndex(m => 
@@ -30,7 +46,6 @@ const MemoryService = {
       // Atualizar a memória existente incrementando a contagem de ocorrências
       memories[existingIndex].occurrences += 1;
       memories[existingIndex].lastUpdated = new Date().toISOString();
-      console.log(`Memória existente atualizada: ${memory.topic} => ${memory.data} (ocorrências: ${memories[existingIndex].occurrences})`);
     } else {
       // Adicionar nova memória
       memories.push({
@@ -40,7 +55,6 @@ const MemoryService = {
         createdAt: new Date().toISOString(),
         lastUpdated: new Date().toISOString()
       });
-      console.log(`Nova memória adicionada: ${memory.topic} => ${memory.data}`);
     }
     
     // Ordenar memórias pela relevância (ocorrências e data)
@@ -60,7 +74,15 @@ const MemoryService = {
     const user = AuthService.getCurrentUser();
     const storageKey = user?.id ? `user_memories_${user.id}` : 'user_memories';
     
-    localStorage.setItem(storageKey, JSON.stringify(trimmedMemories));
+    // Atualizar cache
+    memoriesCache = trimmedMemories;
+    lastUserId = user?.id || 'anonymous';
+    
+    // Usar requestAnimationFrame para operações de escrita no localStorage
+    requestAnimationFrame(() => {
+      localStorage.setItem(storageKey, JSON.stringify(trimmedMemories));
+    });
+    
     return trimmedMemories;
   },
   
@@ -95,7 +117,7 @@ const MemoryService = {
     // Ordenar por relevância (ocorrências e confiança) e limitar
     return uniqueMemories
       .sort((a, b) => b.occurrences - a.occurrences)
-      .slice(0, 7); // Aumentamos o limite para incluir mais contexto
+      .slice(0, 7); // Limitamos a 7 memórias mais relevantes
   },
   
   // Excluir uma memória específica

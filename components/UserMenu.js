@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaUserCircle, FaSignOutAlt, FaUser, FaCog, FaDownload, FaDatabase, FaTools, FaTimes } from 'react-icons/fa';
 import AuthService from '../utils/authService';
@@ -9,6 +9,20 @@ const UserMenu = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDataManager, setShowDataManager] = useState(false);
   const [showManagementPanel, setShowManagementPanel] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 640);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
   
   const toggleMenu = () => setIsOpen(!isOpen);
   
@@ -71,7 +85,7 @@ const UserMenu = ({ user, onLogout }) => {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
             className="fixed sm:absolute right-0 left-0 sm:left-auto top-0 sm:top-auto mt-0 sm:mt-2 w-full sm:w-64 sm:max-w-[18rem] bg-white dark:bg-gray-800 shadow-lg rounded-none sm:rounded-lg overflow-hidden z-50 border-b sm:border border-gray-200 dark:border-gray-700 sm:right-0 safe-top mobile-menu-container"
-            style={{height: 'calc(100% - env(safe-area-inset-bottom))'}}
+            style={{height: isMobile ? 'calc(100% - env(safe-area-inset-bottom))' : 'auto'}}
           >
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <div className="flex items-center flex-1 overflow-hidden">
