@@ -9,13 +9,10 @@ function useTheme() {
       const saved = localStorage.getItem('theme');
       if (saved === 'dark' || saved === 'light') return saved;
       
-      // Verificar preferência do sistema
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return 'dark';
-      }
-      return 'light';
+      // Sempre começar com dark por padrão
+      return 'dark';
     }
-    return 'light';
+    return 'dark';
   });
   
   useEffect(() => {
