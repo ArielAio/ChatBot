@@ -54,22 +54,31 @@ const consultarAPI = async (pergunta, memoriasRelevantes = []) => {
         const promptSistema = `Responda de forma clara e completa, não ultrapassando 1000 tokens.
 ${contextoMemoria}`;
 
+        console.log("Enviando requisição para a API com a pergunta:", pergunta);
+
         const response = await client.chat.completions.create({
             model: 'sabia-3.1',
             messages: [
                 { role: 'system', content: promptSistema },
                 { role: 'user', content: pergunta },
             ],
-            temperature: 0.1,
+            temperature: 0.7,
             max_tokens: 1000,
-            stop: ['\n\n'],
         });
         
-        if (!response.choices || !response.choices[0]?.message?.content) {
-            throw new Error('Resposta da API inválida ou vazia');
+        console.log("Resposta recebida da API:", JSON.stringify(response, null, 2));
+        
+        if (!response.choices || response.choices.length === 0) {
+            throw new Error('Resposta da API vazia ou inválida');
         }
 
-        return response.choices[0].message.content;
+        const resposta = response.choices[0]?.message?.content;
+        
+        if (!resposta) {
+            throw new Error('Conteúdo da resposta está vazio');
+        }
+
+        return resposta;
     } catch (error) {
         console.error("Erro na chamada à API:", error);
         throw error;
@@ -110,7 +119,10 @@ export default async function handler(req, res) {
         // Usar as memórias relevantes que foram passadas, se houver
         const memorias = memoriasRelevantes || [];
         
+        console.log("Processando pergunta:", perguntaTrimmed);
+        
         const resposta = await consultarAPI(perguntaTrimmed, memorias);
+        console.log("Resposta gerada:", resposta.substring(0, 100) + "...");
         
         // Aplicar cache-control para melhorar performance
         res.setHeader('Cache-Control', 'private, max-age=3600');

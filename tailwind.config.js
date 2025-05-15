@@ -7,6 +7,10 @@ module.exports = {
   darkMode: 'class', // Ativa o modo dark baseado em classe
   theme: {
     extend: {
+      screens: {
+        'xxs': '360px',
+        'xs': '480px',
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -15,6 +19,12 @@ module.exports = {
         "chat-user": "var(--chat-user)",
         "input-bg": "var(--input-bg)",
         "input-border": "var(--input-border)",
+      },
+      spacing: {
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
       },
       animation: {
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",

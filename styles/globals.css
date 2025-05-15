@@ -32,7 +32,29 @@ html.dark {
     background: var(--background);
     color: var(--foreground);
     transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+    min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    width: 100vw;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
   }
+  
+  /* Melhorar usabilidade em telas touch */
+  @media (pointer: coarse) {
+    button, a, input[type="button"], input[type="submit"] {
+      cursor: default;
+    }
+  }
+}
+
+/* Utilitários para texto responsivo */
+.text-wrap-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.text-balance {
+  text-wrap: balance;
 }
 
 /* Scrollbar personalizada */
@@ -83,3 +105,101 @@ html.dark {
 .animate-fadeIn { animation: fadeIn 0.5s ease-in-out; }
 .animate-slideUp { animation: slideUp 0.3s ease-out; }
 .ouvindo { animation: pulsar 1s infinite; }
+
+/* Media queries para melhorar responsividade */
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .sm-hidden {
+    display: none !important;
+  }
+  
+  .sm-flex-col {
+    flex-direction: column !important;
+  }
+  
+  .sm-w-full {
+    width: 100% !important;
+  }
+  
+  .sm-text-center {
+    text-align: center !important;
+  }
+  
+  .sm-text-sm {
+    font-size: 0.875rem !important;
+  }
+  
+  .sm-p-2 {
+    padding: 0.5rem !important;
+  }
+  
+  .sm-m-1 {
+    margin: 0.25rem !important;
+  }
+  
+  .sm-gap-1 {
+    gap: 0.25rem !important;
+  }
+}
+
+/* Correções para telas pequenas */
+@media (max-width: 480px) {
+  button {
+    touch-action: manipulation;
+  }
+  
+  input, button {
+    font-size: 16px; /* Previne zoom em iOS */
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+  }
+  
+  .mobile-p-2 {
+    padding: 0.5rem !important;
+  }
+  
+  .overscroll-none {
+    overscroll-behavior: none;
+  }
+  
+  html, body {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .chat-container {
+    overscroll-behavior-y: contain;
+  }
+  
+  /* Melhorias para tapclick */
+  a, button, [role="button"] {
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Melhor scrolling em elementos com overflow */
+  .overflow-scroll, .overflow-auto, .overflow-y-auto, .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Corrigir problemas de overflow com texto longo */
+  .break-words {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  
+  /* Ajustar o tamanho dos elementos de UI para touch */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

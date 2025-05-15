@@ -74,10 +74,10 @@ const DataManagement = ({ onComplete }) => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-md w-full"
+      className="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-md w-[95%] sm:w-full mobile-modal overflow-hidden flex flex-col"
     >
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+      <div className="flex justify-between items-center mb-3 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white">
           Gerenciar Dados
         </h2>
         {onComplete && (
@@ -85,7 +85,7 @@ const DataManagement = ({ onComplete }) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => onComplete(false)}
-            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-1 min-h-[40px] min-w-[40px] flex items-center justify-center"
             aria-label="Fechar"
           >
             <FaTimes size={20} />
@@ -93,23 +93,23 @@ const DataManagement = ({ onComplete }) => {
         )}
       </div>
 
-      <div className="space-y-6">
-        <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+      <div className="space-y-4 overflow-y-auto flex-1">
+        <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
           <p className="text-sm text-blue-700 dark:text-blue-300">
             Exporte seus dados para fazer backup ou transferir para outro dispositivo.
             Importe para restaurar um backup anterior.
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={handleExport}
-            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-3 px-3 sm:px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm sm:text-base touch-action-manipulation min-h-[44px]"
             disabled={isImporting}
           >
-            <FaCloudDownloadAlt size={18} />
+            <FaCloudDownloadAlt size={16} />
             <span>Exportar Dados</span>
           </motion.button>
 
@@ -117,10 +117,10 @@ const DataManagement = ({ onComplete }) => {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={triggerFileInput}
-            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-3 px-3 sm:px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors text-sm sm:text-base touch-action-manipulation min-h-[44px]"
             disabled={isImporting}
           >
-            <FaCloudUploadAlt size={18} />
+            <FaCloudUploadAlt size={16} />
             <span>Importar Dados</span>
           </motion.button>
 

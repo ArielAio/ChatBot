@@ -26,21 +26,21 @@ const LoginScreen = ({ onLoginSuccess }) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex flex-col items-center justify-center min-h-screen w-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900"
+      className="flex flex-col items-center justify-center min-h-screen w-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900 px-4"
     >
       <motion.div 
         initial={{ y: -50 }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="mb-8 text-center"
+        className="mb-6 sm:mb-8 text-center"
       >
-        <div className="mb-4 flex justify-center">
-          <div className="h-24 w-24 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center shadow-xl">
-            <FaRobot className="text-white" size={48} />
+        <div className="mb-3 sm:mb-4 flex justify-center">
+          <div className="h-16 w-16 sm:h-24 sm:w-24 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center shadow-xl">
+            <FaRobot className="text-white" size={32} />
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Bem-vindo ao ChatBot</h1>
-        <p className="text-gray-600 dark:text-gray-300 max-w-md mx-auto">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-2">Bem-vindo ao ChatBot</h1>
+        <p className="text-gray-600 dark:text-gray-300 max-w-md mx-auto text-sm sm:text-base">
           Acesse com sua conta do Google para sincronizar suas conversas e memórias.
         </p>
       </motion.div>
@@ -77,19 +77,17 @@ const LoginScreen = ({ onLoginSuccess }) => {
             Como seus dados são armazenados?
           </button>
         </div>
-      </motion.div>
-      
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => onLoginSuccess(null)} // Permite pular o login
-        className="mt-8 text-sm text-blue-600 dark:text-blue-400 hover:underline"
-      >
-        Continuar sem login
-      </motion.button>
+      </motion.div>        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => onLoginSuccess(null)} // Permite pular o login
+          className="mt-8 text-sm text-blue-600 dark:text-blue-400 hover:underline py-2 px-4 touch-target"
+        >
+          Continuar sem login
+        </motion.button>
 
       {/* Modal de informações sobre armazenamento de dados */}
       {showInfoModal && (

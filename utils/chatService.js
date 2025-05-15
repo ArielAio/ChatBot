@@ -76,11 +76,13 @@ const ChatService = {
   },
 
   // Cria um novo chat
-  createChat: (firstMessage) => {
+  createChat: (firstMessage = "Nova Conversa") => {
     const id = Date.now().toString();
-    const title = firstMessage.length > 30 
-      ? firstMessage.substring(0, 30) + '...' 
-      : firstMessage;
+    
+    // Usar o título diretamente se for uma string, ou definir um padrão
+    const title = typeof firstMessage === 'string' ? 
+      (firstMessage.length > 30 ? firstMessage.substring(0, 30) + '...' : firstMessage) : 
+      "Nova Conversa";
     
     const newChat = {
       id,

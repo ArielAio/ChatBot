@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaUserCircle, FaSignOutAlt, FaUser, FaCog, FaDownload, FaDatabase, FaTools } from 'react-icons/fa';
+import { FaUserCircle, FaSignOutAlt, FaUser, FaCog, FaDownload, FaDatabase, FaTools, FaTimes } from 'react-icons/fa';
 import AuthService from '../utils/authService';
 import DataManagement from './DataManagement';
 import ManagementPanel from './ManagementPanel';
@@ -46,20 +46,21 @@ const UserMenu = ({ user, onLogout }) => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={toggleMenu}
-        className="p-1 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="relative p-1 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
         aria-label="Menu do usuário"
       >
         {user?.picture ? (
           <img 
             src={user.picture} 
             alt={user.name || 'Usuário'} 
-            className="h-9 w-9 rounded-full border-2 border-blue-400 dark:border-blue-500 hover:border-blue-600 transition-colors"
+            className="h-7 w-7 sm:h-9 sm:w-9 rounded-full border-2 border-blue-400 dark:border-blue-500 hover:border-blue-600 transition-colors"
           />
         ) : (
-          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center">
-            <FaUserCircle className="text-white" size={20} />
+          <div className="h-7 w-7 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center">
+            <FaUserCircle className="text-white" size={18} />
           </div>
         )}
+        <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-white dark:border-gray-800 sm:hidden"></span>
       </motion.button>
       
       <AnimatePresence>
@@ -69,22 +70,23 @@ const UserMenu = ({ user, onLogout }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden z-50 border border-gray-200 dark:border-gray-700"
+            className="fixed sm:absolute right-0 left-0 sm:left-auto top-0 sm:top-auto mt-0 sm:mt-2 w-full sm:w-64 sm:max-w-[18rem] bg-white dark:bg-gray-800 shadow-lg rounded-none sm:rounded-lg overflow-hidden z-50 border-b sm:border border-gray-200 dark:border-gray-700 sm:right-0 safe-top mobile-menu-container"
+            style={{height: 'calc(100% - env(safe-area-inset-bottom))'}}
           >
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+              <div className="flex items-center flex-1 overflow-hidden">
                 {user?.picture ? (
                   <img 
                     src={user.picture} 
                     alt={user.name || 'Usuário'} 
-                    className="h-10 w-10 rounded-full mr-3"
+                    className="h-10 w-10 rounded-full mr-3 flex-shrink-0"
                   />
                 ) : (
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center mr-3">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center mr-3 flex-shrink-0">
                     <FaUserCircle className="text-white" size={22} />
                   </div>
                 )}
-                <div>
+                <div className="min-w-0">
                   <div className="font-semibold text-gray-800 dark:text-white truncate">
                     {user?.name || 'Usuário Anônimo'}
                   </div>
@@ -95,9 +97,15 @@ const UserMenu = ({ user, onLogout }) => {
                   )}
                 </div>
               </div>
+              <button 
+                onClick={() => setIsOpen(false)}
+                className="p-1 text-gray-500 sm:hidden rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <FaTimes size={20} />
+              </button>
             </div>
             
-            <div className="p-2 space-y-1">
+            <div className="p-2 space-y-1 overflow-y-auto" style={{maxHeight: 'calc(100% - 145px)'}}>
               {!user && (
                 <button
                   onClick={() => {
@@ -106,7 +114,7 @@ const UserMenu = ({ user, onLogout }) => {
                     // A lógica para isso precisaria estar no componente principal
                     alert('Para usar uma conta, faça logout e entre novamente.');
                   }}
-                  className="flex items-center w-full p-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                  className="flex items-center w-full p-2 sm:p-2 py-3 sm:py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors touch-action-manipulation"
                 >
                   <FaUser className="mr-2 text-blue-500" />
                   Entrar com conta Google
@@ -118,7 +126,7 @@ const UserMenu = ({ user, onLogout }) => {
                   setShowDataManager(true);
                   setIsOpen(false);
                 }}
-                className="flex items-center w-full p-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                className="flex items-center w-full p-2 sm:p-2 py-3 sm:py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors touch-action-manipulation"
               >
                 <FaDatabase className="mr-2 text-blue-500" />
                 Importar/Exportar Dados
@@ -129,7 +137,7 @@ const UserMenu = ({ user, onLogout }) => {
                   setShowManagementPanel(true);
                   setIsOpen(false);
                 }}
-                className="flex items-center w-full p-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                className="flex items-center w-full p-2 sm:p-2 py-3 sm:py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors touch-action-manipulation"
               >
                 <FaTools className="mr-2 text-blue-500" />
                 Gerenciar Chats e Memórias
@@ -139,7 +147,7 @@ const UserMenu = ({ user, onLogout }) => {
               
               <button
                 onClick={handleLogout}
-                className="flex items-center w-full p-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                className="flex items-center w-full p-2 sm:p-2 py-3 sm:py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors touch-action-manipulation"
               >
                 <FaSignOutAlt className="mr-2" />
                 {user ? 'Sair da conta' : 'Reiniciar aplicativo'}
@@ -173,7 +181,20 @@ const UserMenu = ({ user, onLogout }) => {
       {/* Painel de gerenciamento de chats e memórias */}
       <AnimatePresence>
         {showManagementPanel && (
-          <ManagementPanel onClose={handleManagementPanelClose} user={user} />
+          <ManagementPanel onClose={handleManagementPanelClose} user={user || null} />
+        )}
+      </AnimatePresence>
+      
+      {/* Overlay de fundo para fechar o menu em dispositivos móveis */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-40 sm:hidden"
+            onClick={() => setIsOpen(false)}
+          />
         )}
       </AnimatePresence>
     </div>

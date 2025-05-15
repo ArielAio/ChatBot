@@ -40,60 +40,38 @@ function useTheme() {
 
 // Componente de mensagem individual otimizado com memoização
 const Mensagem = React.memo(({ conversa, index }) => {
-  const isBot = conversa.tipo === 'bot';
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
+  const { ref, inView } = useInView({ triggerOnce: true, rootMargin: '100px' });
   
-  const variants = {
-    hidden: { 
-      opacity: 0, 
-      x: isBot ? -20 : 20,
-      y: 10 
-    },
-    visible: { 
-      opacity: 1, 
-      x: 0, 
-      y: 0,
-      transition: { 
-        type: "spring",
-        stiffness: 400,
-        damping: 30,
-        mass: 1,
-        delay: Math.min(0.1 * (index % 3), 0.3)
-      }
-    }
-  };
-
+  // Mensagem vem do bot ou do usuário
+  const isBot = conversa.tipo === 'bot';
+  
   return (
     <motion.div
       ref={ref}
-      initial="hidden"
-      animate={inView ? "visible" : "hidden"}
-      variants={variants}
-      layout
-      className={`mb-3 flex ${isBot ? 'justify-start' : 'justify-end'}`}
+      initial={{ opacity: 0, y: 10 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.3, delay: Math.min(index * 0.1, 0.5) }}
+      className={`mb-3 sm:mb-4 flex ${isBot ? 'justify-start' : 'justify-end'}`}
     >
-      <div className="flex items-end gap-2">
-        {isBot && (
-          <div className="flex-shrink-0 h-9 w-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center shadow-lg">
-            <FaRobot className="text-white" size={16} />
-          </div>
-        )}
-        <motion.div
-          whileHover={{ scale: 1.01 }}
-          className={`p-3 rounded-lg max-w-[75%] md:max-w-[65%] text-sm shadow-md ${
-            isBot
-              ? 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-none border border-gray-200 dark:border-gray-700'
-              : 'bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-br-none'
+      <div className={`flex w-[90%] sm:w-[85%] ${isBot ? 'order-2' : 'order-1'}`}>
+        <div 
+          className={`p-2.5 sm:p-3 rounded-xl text-sm sm:text-base break-words text-wrap-anywhere w-full ${
+            isBot 
+              ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm border border-gray-200 dark:border-gray-600 bot-message' 
+              : 'bg-blue-500 text-white user-message'
           }`}
         >
           {conversa.texto}
-        </motion.div>
-        {!isBot && (
-          <div className="flex-shrink-0 h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-800 flex items-center justify-center shadow-lg">
-            <FaUser className="text-white" size={14} />
+        </div>
+      </div>
+      <div className={`flex items-end mb-1 sm:mb-2 ${isBot ? 'order-1 mr-1 sm:mr-2' : 'order-2 ml-1 sm:ml-2'}`}>
+        {isBot ? (
+          <div className="p-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900">
+            <FaRobot className="text-indigo-500 dark:text-indigo-400" size={14} />
+          </div>
+        ) : (
+          <div className="p-1.5 rounded-full bg-blue-100 dark:bg-blue-900">
+            <FaUser className="text-blue-500 dark:text-blue-400" size={14} />
           </div>
         )}
       </div>
@@ -105,105 +83,87 @@ Mensagem.displayName = 'Mensagem';
 
 // Componente de indicador de digitação otimizado
 const TypingIndicator = () => (
-  <motion.div 
+  <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: 10 }}
-    transition={{ duration: 0.2 }}
-    className="mb-3 flex justify-start"
+    exit={{ opacity: 0 }}
+    className="mb-3 sm:mb-4 flex justify-start"
   >
-    <div className="flex items-end gap-2">
-      <div className="flex-shrink-0 h-9 w-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center shadow-lg">
-        <FaRobot className="text-white" size={16} />
+    <div className="flex w-[90%] sm:w-[85%] order-2">
+      <div className="py-2 px-3 sm:py-3 sm:px-4 bg-white dark:bg-gray-700 rounded-xl shadow-sm border border-gray-200 dark:border-gray-600 flex items-center space-x-1.5 w-full">
+        <motion.div
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-400"
+        />
+        <motion.div
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity, delay: 0.2, ease: "easeInOut" }}
+          className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-400"
+        />
+        <motion.div
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity, delay: 0.4, ease: "easeInOut" }}
+          className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-400"
+        />
       </div>
-      <div className="p-3 rounded-lg bg-white dark:bg-gray-800 rounded-bl-none border border-gray-200 dark:border-gray-700 shadow-md">
-        <div className="flex items-center space-x-2">
-          <motion.span 
-            className="block w-2 h-2 bg-blue-400 dark:bg-blue-500 rounded-full" 
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 0.5, repeat: Infinity, repeatType: "loop", ease: "easeInOut", delay: 0 }}
-          />
-          <motion.span 
-            className="block w-2 h-2 bg-blue-400 dark:bg-blue-500 rounded-full" 
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 0.5, repeat: Infinity, repeatType: "loop", ease: "easeInOut", delay: 0.15 }}
-          />
-          <motion.span 
-            className="block w-2 h-2 bg-blue-400 dark:bg-blue-500 rounded-full" 
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 0.5, repeat: Infinity, repeatType: "loop", ease: "easeInOut", delay: 0.3 }}
-          />
-        </div>
+    </div>
+    <div className="flex items-end mb-1.5 sm:mb-2 order-1 mr-1 sm:mr-2">
+      <div className="p-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900">
+        <FaRobot className="text-indigo-500 dark:text-indigo-400" size={14} />
       </div>
     </div>
   </motion.div>
 );
 
-// Componente de ChatItem para a barra lateral
+// Componente ChatItem (item da barra lateral)
 const ChatItem = React.memo(({ chat, isActive, onClick, onDelete }) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  
-  const handleDelete = (e) => {
+  const confirmDeleteChat = (e) => {
     e.stopPropagation();
-    setIsDeleting(true);
+    if (confirm("Tem certeza que deseja excluir esta conversa?")) {
+      onDelete(chat.id);
+    }
   };
   
-  const confirmDelete = (e) => {
-    e.stopPropagation();
-    onDelete(chat.id);
-    setIsDeleting(false);
-  };
-  
-  const cancelDelete = (e) => {
-    e.stopPropagation();
-    setIsDeleting(false);
-  };
+  // Verificando se estamos em dispositivo móvel sem usar o state global
+  const isOnMobileDevice = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
   
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      whileHover={{ scale: 1.01 }}
-      className={`flex items-center justify-between p-3 rounded-lg cursor-pointer mb-2 transition-colors ${
-        isActive 
-          ? 'bg-blue-100 dark:bg-blue-900/30 border-l-4 border-blue-500' 
-          : 'hover:bg-gray-100 dark:hover:bg-gray-800 border-l-4 border-transparent'
-      }`}
-      onClick={onClick}
+      transition={{ duration: 0.2 }}
+      onClick={() => onClick(chat)}
+      className={`mb-2 p-2.5 sm:p-3 rounded-lg cursor-pointer transition-colors border ${
+        isActive
+          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800'
+          : 'hover:bg-gray-100 dark:hover:bg-gray-700 border-transparent'
+      } ${isOnMobileDevice ? 'mobile-chat-item' : ''}`}
     >
-      {isDeleting ? (
-        <div className="flex items-center w-full justify-between">
-          <span className="text-sm text-red-500">Confirmar exclusão?</span>
-          <div className="flex space-x-2">
-            <button 
-              onClick={confirmDelete} 
-              className="p-1 text-red-500 hover:text-red-700 transition-colors"
-              aria-label="Confirmar exclusão"
-            >
-              <FaTrash size={14} />
-            </button>
-            <button 
-              onClick={cancelDelete} 
-              className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
-              aria-label="Cancelar exclusão"
-            >
-              <FaTimes size={14} />
-            </button>
-          </div>
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0 pr-2">
+          <p className={`font-medium text-sm sm:text-base leading-tight mb-1 text-wrap-anywhere ${isOnMobileDevice ? 'mobile-chat-title' : ''} ${
+            isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-800 dark:text-gray-200'
+          }`}>
+            {chat.title || 'Nova conversa'}
+          </p>
+          <p className={`text-xs text-gray-500 dark:text-gray-400 mt-0.5 ${isOnMobileDevice ? 'mobile-chat-subtitle' : ''}`}>
+            {chat.messages.length > 0 
+              ? `${chat.messages.length} mensagens` 
+              : 'Sem mensagens'
+            }
+          </p>
         </div>
-      ) : (
-        <>
-          <div className="flex-1 truncate text-sm font-medium">{chat.title}</div>
-          <button 
-            onClick={handleDelete} 
-            className="ml-2 p-1 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-            aria-label="Excluir chat"
-          >
-            <FaTrash size={14} />
-          </button>
-        </>
-      )}
+        
+        <button
+    onClick={confirmDeleteChat}
+    className={`ml-1 p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors touch-target ${isOnMobileDevice ? 'mobile-chat-delete' : ''}`}
+    aria-label="Excluir conversa"
+  >
+    <FaTrash size={isOnMobileDevice ? 14 : 12} />
+  </button>
+      </div>
     </motion.div>
   );
 });
@@ -224,10 +184,13 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [showMobileActions, setShowMobileActions] = useState(false);
+  const lastScrollTop = useRef(0);
   const circuloRef = useRef(null);
   const endOfMessagesRef = useRef(null);
   const chatContainerRef = useRef(null);
   const inputRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Verificar autenticação ao carregar a página
   useEffect(() => {
@@ -271,7 +234,7 @@ Você está usando o modo anônimo. Suas conversas e memórias serão salvas ape
 Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com o Google a qualquer momento.`;
       }
       
-      // Adicionar mensagem de boas-vindas ao chat
+      // Adicionar mensagem de boas-vindas ao chat atual
       const welcomeMessage = { tipo: 'bot', texto: welcomeText };
       ChatService.addMessage(newChat.id, welcomeMessage);
       
@@ -565,6 +528,30 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
     }
   }, [chatAtual, loading]);
 
+  // Detectar direção do scroll para mostrar/esconder barra de ações móvel
+  useEffect(() => {
+    if (!chatContainerRef.current || !mounted) return;
+    
+    const handleScroll = () => {
+      const st = chatContainerRef.current.scrollTop;
+      if (st > lastScrollTop.current && st > 150) {
+        // Scroll para baixo
+        setShowMobileActions(true);
+      } else if (st < 100 || st < lastScrollTop.current) {
+        // Scroll para cima
+        setShowMobileActions(false);
+      }
+      lastScrollTop.current = st <= 0 ? 0 : st;
+    };
+    
+    const chatContainer = chatContainerRef.current;
+    chatContainer.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      chatContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, [mounted, chatContainerRef]);
+  
   // Verificar se o dispositivo suporta reconhecimento de voz
   const suportaReconhecimento = useMemo(() => {
     if (typeof window !== 'undefined' && mounted) {
@@ -573,6 +560,69 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
     return false;
   }, [mounted]);
   
+  // Implementação do gesto de swipe para dispositivos móveis
+  const handleSwipeRight = useCallback(() => {
+    if (!sidebarOpen) {
+      setSidebarOpen(true);
+    }
+  }, [sidebarOpen]);
+
+  const handleSwipeLeft = useCallback(() => {
+    if (sidebarOpen) {
+      setSidebarOpen(false);
+    }
+  }, [sidebarOpen]);
+
+  // Detectar gestos de swipe em dispositivos móveis
+  useEffect(() => {
+    if (!mounted) return;
+    
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const minSwipeDistance = 50;
+    
+    const handleTouchStart = (e) => {
+      touchStartX = e.touches[0].clientX;
+    };
+    
+    const handleTouchEnd = (e) => {
+      touchEndX = e.changedTouches[0].clientX;
+      const swipeDistance = touchEndX - touchStartX;
+      
+      if (Math.abs(swipeDistance) > minSwipeDistance) {
+        if (swipeDistance > 0) {
+          // Swipe para direita
+          handleSwipeRight();
+        } else {
+          // Swipe para esquerda
+          handleSwipeLeft();
+        }
+      }
+    };
+    
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [mounted, handleSwipeRight, handleSwipeLeft]);
+  
+  // Função para atualizar o isMobile quando o tamanho da tela muda
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Verificar tamanho inicial
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   // Renderiza um placeholder durante SSR/antes da hidratação
   if (!mounted || checkingAuth) {
     return (
@@ -590,7 +640,21 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
   // Animações para elementos da interface
   const sidebarVariants = {
     open: { 
-      width: "280px",
+      // Em dispositivos móveis: tela cheia com largura e altura de 100%
+      ...(isMobile 
+        ? { 
+            width: "100%", 
+            height: "100%",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            zIndex: 50,
+          } 
+        : { 
+            width: "350px",
+            maxWidth: "350px" 
+          }
+      ),
       transition: { 
         type: "spring",
         stiffness: 300,
@@ -599,26 +663,38 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
     },
     closed: { 
       width: "0px",
+      ...(isMobile ? { height: "0px" } : {}),
       transition: { 
         type: "spring",
         stiffness: 300,
         damping: 30
       }
     }
-  };
-
-  return (
+  };    return (
     <div className="flex h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900 transition-colors duration-700">
       {/* Sidebar para exibir lista de chats */}
       <motion.div 
-        className="h-full bg-white dark:bg-gray-800 shadow-xl border-r border-gray-200 dark:border-gray-700 overflow-hidden z-10"
+        className={`${isMobile ? 'fixed inset-0' : 'h-full'} bg-white dark:bg-gray-800 shadow-xl border-r border-gray-200 dark:border-gray-700 overflow-hidden ${isMobile ? 'z-50' : 'z-10'}`}
         animate={sidebarOpen ? "open" : "closed"}
         variants={sidebarVariants}
         initial={false}
       >
-        <div className="p-4 h-full flex flex-col">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Conversas</h2>
+        <div className="p-3 sm:p-4 h-full flex flex-col">
+          <div className="flex items-center justify-between mb-3 sm:mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center">
+              {isMobile && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={toggleSidebar}
+                  className="p-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  aria-label="Fechar menu"
+                >
+                  <FaTimes size={16} className="text-gray-600 dark:text-gray-300" />
+                </motion.button>
+              )}
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100">Conversas</h2>
+            </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -652,26 +728,40 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
         </div>
       </motion.div>
       
+      {/* Área de deslizamento para abrir sidebar em dispositivos móveis */}
+      {!sidebarOpen && (
+        <div 
+          className="swipe-area swipe-area-left sm:hidden touch-action-none" 
+          onTouchStart={(e) => {
+            const touchX = e.touches[0].clientX;
+            if (touchX < 30) { // Aumentado para melhor usabilidade
+              toggleSidebar();
+            }
+          }}
+          aria-hidden="true"
+        />
+      )}
+      
       {/* Área principal do chat */}
       <div className="flex-1 flex flex-col h-full">
         {/* Cabeçalho com título e botões */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between shadow-sm">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2 sm:p-4 flex items-center justify-between shadow-sm header-container">
           <div className="flex items-center">
             <button
               onClick={toggleSidebar}
-              className="p-2 mr-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-2 sm:p-2 mr-1 sm:mr-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors header-button"
               aria-label={sidebarOpen ? "Fechar barra lateral" : "Abrir barra lateral"}
             >
-              <span className="block w-5 h-0.5 bg-gray-600 dark:bg-gray-300 mb-1"></span>
-              <span className="block w-5 h-0.5 bg-gray-600 dark:bg-gray-300 mb-1"></span>
-              <span className="block w-5 h-0.5 bg-gray-600 dark:bg-gray-300"></span>
+              <span className="block w-5 h-0.5 bg-gray-600 dark:bg-gray-300 mb-1.5 hamburger-line"></span>
+              <span className="block w-5 h-0.5 bg-gray-600 dark:bg-gray-300 mb-1.5 hamburger-line"></span>
+              <span className="block w-5 h-0.5 bg-gray-600 dark:bg-gray-300 hamburger-line"></span>
             </button>
-            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100 truncate">
+            <h1 className="text-base sm:text-xl font-semibold text-gray-800 dark:text-gray-100 truncate max-w-[150px] sm:max-w-[250px] md:max-w-full header-title">
               {chatAtual?.title || "Chatbot"}
             </h1>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <UserMenu 
               user={user} 
               onLogout={handleLogout} 
@@ -681,22 +771,22 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleMemoryPanel}
-              className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="p-1 sm:p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               aria-label="Memórias"
             >
-              <FaBrain className="text-purple-500 dark:text-purple-400" size={18} />
+              <FaBrain className="text-purple-500 dark:text-purple-400" size={16} />
             </motion.button>
             
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleTheme}
-              className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="p-1 sm:p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               aria-label="Alternar tema"
             >
               {theme === 'dark' ? 
-                <FaSun className="text-yellow-400" size={18} /> : 
-                <FaMoon className="text-gray-700" size={18} />
+                <FaSun className="text-yellow-400" size={16} /> : 
+                <FaMoon className="text-gray-700" size={16} />
               }
             </motion.button>
             
@@ -716,9 +806,9 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
         </div>
         
         {/* Mensagens da conversa */}
-        <div 
+        <div
           ref={chatContainerRef}
-          className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 transition-colors"
+          className="flex-1 overflow-y-auto py-2 sm:py-4 px-2 sm:px-4 bg-gray-50 dark:bg-gray-900 transition-colors chat-container overscroll-none"
         >
           {chatAtual ? (
             <AnimatePresence mode="popLayout">
@@ -737,14 +827,14 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="mt-4 mb-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/30 rounded-lg text-xs text-purple-700 dark:text-purple-300"
+                  className="mt-3 sm:mt-4 mb-2 px-2 sm:px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/30 rounded-lg text-xs text-purple-700 dark:text-purple-300"
                 >
                   <div className="flex items-center">
-                    <FaBrain className="mr-2 text-purple-500" size={12} />
-                    <div>
+                    <FaBrain className="mr-1 sm:mr-2 text-purple-500" size={12} />
+                    <div className="text-xs">
                       <strong>Memórias ativas:</strong>{' '}
                       {memories.length > 0 
-                        ? `${user?.firstName || memories.filter(m => m.topic === 'Nome').map(m => m.data)[0] || 'Usuário'} (${memories.length} memórias)` 
+                        ? `${user?.firstName || memories.filter(m => m.topic === 'Nome').map(m => m.data)[0] || 'Usuário'} (${memories.length})` 
                         : 'Nenhuma memória disponível'}
                     </div>
                   </div>
@@ -753,7 +843,7 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
             </AnimatePresence>
           ) : (
             <div className="h-full flex items-center justify-center">
-              <p className="text-gray-500 dark:text-gray-400">Selecione ou crie uma conversa</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">Selecione ou crie uma conversa</p>
             </div>
           )}
           
@@ -761,14 +851,14 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
         </div>
         
         {/* Área de input */}
-        <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-2 max-w-4xl mx-auto">
+        <div className="p-2 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 message-input">
+          <div className="flex items-center gap-1 sm:gap-2 max-w-4xl mx-auto">
             {suportaReconhecimento && (
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={iniciarOuPararReconhecimentoVoz}
-                className={`relative p-3 rounded-full transition-all duration-300 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                className={`relative p-2 sm:p-3 rounded-full transition-all duration-300 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-target ${
                   ouvindo 
                     ? 'bg-red-500 hover:bg-red-600' 
                     : 'bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700'
@@ -776,7 +866,7 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
                 disabled={loading || !chatAtual}
                 aria-label={ouvindo ? 'Parar reconhecimento de voz' : 'Iniciar reconhecimento de voz'}
               >
-                <FaMicrophone className="text-white" size={18} />
+                <FaMicrophone className="text-white" size={16} />
                 
                 {ouvindo && (
                   <motion.div
@@ -801,8 +891,8 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
               value={pergunta}
               onChange={(e) => setPergunta(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={chatAtual ? "Digite sua pergunta..." : "Selecione ou crie uma conversa para começar"}
-              className="flex-1 p-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 transition-colors"
+              placeholder={chatAtual ? "Digite sua pergunta..." : "Selecione ou crie uma conversa"}
+              className="flex-1 py-2 px-3 sm:p-3 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 transition-colors text-wrap-anywhere"
               disabled={loading || !chatAtual}
               aria-label="Campo de pergunta"
             />
@@ -811,7 +901,7 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={enviarPergunta}
-              className={`p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+              className={`p-2 sm:p-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
                 pergunta.trim() && !loading && chatAtual
                   ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white'
                   : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
@@ -819,7 +909,7 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
               disabled={!pergunta.trim() || loading || !chatAtual}
               aria-label="Enviar pergunta"
             >
-              <FaPaperPlane size={18} />
+              <FaPaperPlane size={16} />
             </motion.button>
           </div>
           
@@ -838,12 +928,12 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 300 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-800 shadow-xl z-50 border-l border-gray-200 dark:border-gray-700 overflow-y-auto"
+            className="fixed top-0 right-0 h-full w-[85%] sm:w-80 bg-white dark:bg-gray-800 shadow-xl z-50 border-l border-gray-200 dark:border-gray-700 overflow-y-auto"
           >
-            <div className="p-4 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
-                  <FaBrain className="text-purple-500 dark:text-purple-400 mr-2" size={18} />
+            <div className="p-3 sm:p-4 h-full flex flex-col">
+              <div className="flex items-center justify-between mb-3 sm:mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
+                  <FaBrain className="text-purple-500 dark:text-purple-400 mr-2" size={16} />
                   Memórias
                 </h2>
                 <motion.button
@@ -853,13 +943,13 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
                   className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                   aria-label="Fechar painel de memórias"
                 >
-                  <FaTimes className="text-gray-500 dark:text-gray-400" size={18} />
+                  <FaTimes className="text-gray-500 dark:text-gray-400" size={16} />
                 </motion.button>
               </div>
               
               <div className="flex-1 overflow-y-auto">
                 {memories.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {/* Agrupar memórias por tópico */}
                     {Object.entries(
                       memories.reduce((acc, memory) => {
@@ -868,22 +958,22 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
                         return acc;
                       }, {})
                     ).map(([topic, topicMemories]) => (
-                      <div key={topic} className="mb-4">
-                        <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                      <div key={topic} className="mb-3 sm:mb-4">
+                        <h3 className="text-sm sm:text-md font-semibold text-gray-800 dark:text-gray-200 mb-1 sm:mb-2">
                           {topic}
                         </h3>
-                        <div className="space-y-2">
+                        <div className="space-y-1 sm:space-y-2">
                           {topicMemories.map(memory => (
                             <motion.div
                               key={memory.id}
                               whileHover={{ scale: 1.01 }}
-                              className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm"
+                              className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-xs sm:text-sm"
                             >
-                              <div className="text-gray-800 dark:text-gray-200">
+                              <div className="text-gray-800 dark:text-gray-200 break-words text-wrap-anywhere">
                                 {memory.data}
                               </div>
-                              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 flex justify-between">
-                                <span>Relevância: {memory.occurrences}x</span>
+                              <div className="mt-1 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 flex flex-wrap justify-between">
+                                <span className="mr-1">Relevância: {memory.occurrences}x</span>
                                 <span>
                                   {new Date(memory.lastUpdated).toLocaleDateString()}
                                 </span>
@@ -896,9 +986,9 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
-                    <FaBrain size={48} className="text-gray-300 dark:text-gray-600 mb-4" />
-                    <p>Nenhuma memória armazenada ainda</p>
-                    <p className="text-sm mt-2 text-center">
+                    <FaBrain size={40} className="text-gray-300 dark:text-gray-600 mb-4" />
+                    <p className="text-sm">Nenhuma memória armazenada ainda</p>
+                    <p className="text-xs mt-2 text-center px-4">
                       As memórias serão criadas automaticamente a partir das suas conversas.
                     </p>
                   </div>
@@ -906,6 +996,74 @@ Se quiser sincronizar seus dados entre dispositivos, você pode fazer login com 
               </div>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Barra de ações flutuante para dispositivos móveis */}
+      <AnimatePresence>
+        {showMobileActions && !sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 rounded-full shadow-lg p-1 z-30 sm:hidden bottom-nav"
+          >
+            <div className="flex items-center gap-2">
+              <button
+                onClick={criarNovoChat}
+                className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full mobile-active touch-target"
+                aria-label="Nova conversa"
+              >
+                <FaPlus size={16} />
+              </button>
+              
+              <button
+                onClick={toggleMemoryPanel}
+                className="p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full mobile-active touch-target"
+                aria-label="Memórias"
+              >
+                <FaBrain size={16} />
+              </button>
+              
+              <button
+                onClick={toggleTheme}
+                className="p-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full mobile-active touch-target"
+                aria-label="Alternar tema"
+              >
+                {theme === 'dark' ? 
+                  <FaSun className="text-yellow-400" size={16} /> : 
+                  <FaMoon className="text-gray-700" size={16} />
+                }
+              </button>
+              
+              {suportaReconhecimento && (
+                <button
+                  onClick={iniciarOuPararReconhecimentoVoz}
+                  className={`p-2 rounded-full mobile-active touch-target ${
+                    ouvindo 
+                      ? 'bg-red-500 hover:bg-red-600' 
+                      : 'bg-green-500 hover:bg-green-600'
+                  } text-white`}
+                  aria-label={ouvindo ? 'Parar reconhecimento de voz' : 'Iniciar reconhecimento de voz'}
+                >
+                  <FaMicrophone size={16} />
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Overlay para fechar sidebar em dispositivos móveis */}
+      <AnimatePresence>
+        {isMobile && sidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={toggleSidebar}
+          />
         )}
       </AnimatePresence>
       

@@ -33,7 +33,12 @@ Para permitir o login com o Google em sua aplicação, você precisará configur
    - Quando estiver em produção, adicione também o URL do seu site, como `https://seuchatbot.com.br`
 6. Em "URIs de redirecionamento autorizados", adicione:
    - `http://localhost:3000` (para desenvolvimento local)
+   - `http://localhost` (como backup, caso o servidor use porta diferente)
+   - `http://127.0.0.1:3000` (alternativa para localhost)
+   - `http://127.0.0.1` (backup sem porta)
    - Quando estiver em produção, adicione também o URL do seu site, como `https://seuchatbot.com.br`
+   
+   **IMPORTANTE**: Os URIs de redirecionamento devem corresponder EXATAMENTE ao domínio onde seu app está rodando, incluindo a porta.
 7. Clique em "Criar".
 8. Seu Client ID será exibido. Copie-o para usar em sua aplicação.
 
@@ -88,6 +93,24 @@ Se encontrar problemas com a autenticação, verifique:
 2. **Origens não autorizadas**: Verifique se o URL que você está usando para acessar a aplicação está na lista de origens autorizadas.
 3. **Erros de CORS**: Se receber erros de CORS, verifique as origens autorizadas nas configurações do Google Cloud.
 4. **Status do Projeto**: Certifique-se de que seu projeto no Google Cloud está ativo e não suspenso.
+
+### Erro "redirect_uri_mismatch" (Erro 400)
+
+Se você encontrar o erro "**Error 400: redirect_uri_mismatch**":
+
+1. Acesse [Google Cloud Console](https://console.cloud.google.com/)
+2. Navegue para **APIs e Serviços > Credenciais**
+3. Encontre e edite suas credenciais OAuth
+4. Em "URIs de redirecionamento autorizados", adicione **EXATAMENTE** os URLs que você está usando:
+   - Para desenvolvimento local: `http://localhost:3000`
+   - Adicione também variações: `http://localhost`, `http://127.0.0.1:3000`, `http://127.0.0.1`
+   - Para produção, adicione o domínio exato do seu site
+5. Salve as alterações e aguarde alguns minutos para que sejam propagadas
+6. Teste novamente o login
+
+### Verificar URL de autenticação
+
+Se os problemas persistirem, verifique os logs do navegador para ver qual é o URL exato de redirecionamento que está sendo usado pelo OAuth e adicione-o à lista de URLs autorizados no Google Cloud Console.
 
 ## Privacidade e Segurança
 

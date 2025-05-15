@@ -42,6 +42,7 @@ const AuthService = {
       
       // Retornar o usuário processado
       return userData;
+      return userData;
     } catch (error) {
       console.error('Erro ao processar login do Google:', error);
       return null;
