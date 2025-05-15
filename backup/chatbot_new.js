@@ -95,7 +95,7 @@ O idioma principal da conversa é o português brasileiro.`;
         
         // Obter resposta da API
         const response = await client.chat.completions.create({
-            model: "sabia-3-small",
+            model: "maritalk",
             temperature: 0.7,
             max_tokens: 800,
             messages: [
@@ -114,15 +114,7 @@ O idioma principal da conversa é o português brasileiro.`;
         }
     } catch (error) {
         console.error("Erro ao consultar API:", error);
-        
-        // Formatar o erro de forma mais amigável
-        const errorMessage = error.message || "Erro desconhecido";
-        const formattedError = 
-            errorMessage.includes('model') ? 
-                "Modelo de linguagem não disponível ou desatualizado" : 
-                errorMessage;
-                
-        throw new Error(formattedError);
+        throw error;
     }
 };
 
@@ -150,25 +142,9 @@ export default async function handler(req, res) {
         return res.status(200).json({ resposta });
     } catch (error) {
         console.error('Erro no servidor:', error);
-        
-        // Gerar uma mensagem de erro mais útil
-        let errorMessage = 'Erro ao processar a pergunta';
-        let detailedError = error.message;
-        
-        // Verificar o tipo de erro para mensagens mais específicas
-        if (error.message && error.message.includes('model')) {
-            errorMessage = 'Erro no modelo de IA';
-            // Registrar informações adicionais para diagnóstico
-            console.error('Detalhes do erro de modelo:', {
-                baseURL: client.baseURL,
-                apiKey: process.env.OPENAI_API_KEY ? 'Presente' : 'Ausente',
-                modeloSolicitado: 'sabia-3-small'
-            });
-        }
-        
         return res.status(500).json({ 
-            mensagem: errorMessage,
-            erro: detailedError
+            mensagem: 'Erro ao processar a pergunta',
+            erro: error.message
         });
     }
 }

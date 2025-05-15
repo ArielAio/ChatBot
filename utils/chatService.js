@@ -150,7 +150,7 @@ const ChatService = {
     const timestamp = Date.now();
     const id = `chat_${timestamp}`;
     
-    // Verificar se já existe um chat com este ID
+    // Verificar se já existe um chat com este ID (proteção contra duplicação)
     const existingChat = ChatService.getChat(id);
     if (existingChat) {
       console.warn('Tentativa de criar chat com ID já existente, retornando o existente');
@@ -162,6 +162,7 @@ const ChatService = {
       (firstMessage.length > 30 ? firstMessage.substring(0, 30) + '...' : firstMessage) : 
       "Nova Conversa";
     
+    // Garantir que o chat sempre tenha um array de mensagens válido
     const newChat = {
       id,
       title,
@@ -172,11 +173,22 @@ const ChatService = {
       updatedAt: new Date().toISOString(),
     };
     
-    // Verificar se já existem chats com este ID antes de salvar
+    // Verificar se já existem chats com este ID antes de salvar (dupla verificação)
     const chats = ChatService.getChats();
     if (chats.some(chat => chat.id === id)) {
       console.warn('Chat com mesmo ID já existe na lista, evitando duplicação');
       return chats.find(chat => chat.id === id);
+    }
+    
+    // Verificar se houve alguma criação recente nos últimos 2 segundos
+    const recentChats = chats.filter(chat => {
+      const createTime = new Date(chat.createdAt).getTime();
+      return Date.now() - createTime < 2000;
+    });
+    
+    if (recentChats.length > 0) {
+      console.warn('Chat criado recentemente, evitando duplicação');
+      return recentChats[0]; // Retorna o chat mais recente
     }
     
     console.log('Criando novo chat:', id, title);
@@ -188,6 +200,12 @@ const ChatService = {
   addMessage: (chatId, message) => {
     const chat = ChatService.getChat(chatId);
     if (!chat) return null;
+    
+    // Garantir que o chat tenha um array de mensagens válido
+    if (!chat.messages) {
+      console.warn(`Chat ${chatId} não tem array de mensagens. Inicializando array vazio.`);
+      chat.messages = [];
+    }
     
     chat.messages.push(message);
     // Atualizar a data de modificação do chat

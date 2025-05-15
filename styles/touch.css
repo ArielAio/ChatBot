@@ -1,0 +1,119 @@
+/* Classe para melhorar a área de toque em dispositivos móveis */
+.touch-target {
+  min-height: 44px !important;
+  min-width: 44px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Estilos específicos para a área de mensagem */
+.message-area-mobile {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  gap: 8px;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Estilos para o botão de envio em dispositivos móveis */
+.send-button-mobile {
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Estilos para o campo de entrada em dispositivos móveis */
+.input-field-mobile {
+  height: 48px;
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-size: 16px !important;
+  flex: 1;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field-mobile:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para a área segura em dispositivos iOS */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Feedback visual para elementos interativos em dispositivos móveis */
+.mobile-touch-feedback {
+  position: relative;
+  overflow: hidden;
+}
+
+.mobile-touch-feedback::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+  border-radius: inherit;
+  transition: background-color 0.15s ease;
+  pointer-events: none;
+}
+
+.mobile-touch-feedback:active::after {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.dark .mobile-touch-feedback:active::after {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Melhorias para área de input em dispositivos móveis */
+@media (max-width: 640px) {
+  .message-input {
+    padding: 12px !important;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
+  }
+  
+  .message-input button {
+    min-height: 48px;
+    min-width: 48px;
+  }
+  
+  .message-input input {
+    height: 48px;
+    border-radius: 12px;
+    font-size: 16px !important;
+    padding: 8px 16px;
+  }
+}
+
+/* Ajustes para telas muito pequenas */
+@media (max-width: 360px) {
+  .message-input {
+    padding: 8px !important;
+  }
+  
+  .message-input button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .input-field-mobile {
+    height: 44px;
+    font-size: 15px !important;
+    padding: 6px 12px;
+  }
+  
+  .message-area-mobile {
+    gap: 6px;
+  }
+}

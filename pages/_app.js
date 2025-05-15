@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import "@/styles/globals.css";
 import "@/styles/mobile.css";
+import "@/styles/touch.css";
 
 export default function App({ Component, pageProps }) {
   // Obtendo a CLIENT_ID do Google do ambiente
