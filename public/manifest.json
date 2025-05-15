@@ -1,0 +1,16 @@
+{
+  "name": "ChatBot",
+  "short_name": "ChatBot",
+  "description": "Um chatbot inteligente com conversas e memórias personalizadas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7fafc",
+  "theme_color": "#1F2937",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

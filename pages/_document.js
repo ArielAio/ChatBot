@@ -4,12 +4,10 @@ export default function Document() {
   return (
     <Html lang="pt-BR">
       <Head>
+        {/* Remover preload da fonte inter-var.woff2 que está causando erros */}
         <link
-          rel="preload"
-          href="/fonts/inter-var.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
         />
         <link 
           rel="preconnect" 
