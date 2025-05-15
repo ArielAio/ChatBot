@@ -61,9 +61,23 @@ const ManagementPanel = ({ onClose, user }) => {
   };
 
   const deleteAllChats = () => {
-    ChatService.deleteAllChats();
-    loadData();
-    setConfirmAction(null);
+    try {
+      if (ChatService.deleteAllChats()) {
+        loadData(); // Recarregar dados após a exclusão
+        // Se não há mais chats, pode ser necessário atualizar a página
+        if (window && window.location) {
+          setTimeout(() => {
+            setConfirmAction(null);
+            window.location.reload();
+          }, 500);
+        }
+      } else {
+        console.error('Falha ao excluir todos os chats');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir todos os chats:', error);
+      setConfirmAction(null);
+    }
   };
 
   const deleteAllMemories = () => {

@@ -6,8 +6,14 @@ import { FaTrash } from 'react-icons/fa';
 const ChatItem = React.memo(({ chat, isActive, onClick, onDelete }) => {
   const confirmDeleteChat = useCallback((e) => {
     e.stopPropagation();
-    if (confirm("Tem certeza que deseja excluir esta conversa?")) {
-      onDelete(chat.id);
+    e.preventDefault();
+    
+    try {
+      if (window.confirm("Tem certeza que deseja excluir esta conversa?")) {
+        onDelete(chat.id);
+      }
+    } catch (error) {
+      console.error('Erro ao confirmar exclusão:', error);
     }
   }, [chat.id, onDelete]);
   

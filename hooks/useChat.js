@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import ChatService from '../utils/chatService';
-import ImprovedMemoryService from '../utils/improvedMemoryService';
+import MemoryService from '../utils/memoryService';
 
 // Hook para gerenciar as operações do chat
 function useChat(falarResposta) {
@@ -13,7 +13,6 @@ function useChat(falarResposta) {
   // Refs para prevenir criação duplicada
   const isCreatingChat = useRef(false);
   const lastCreatedChatRef = useRef(0);
-  const debounceTimerRef = useRef(null);
   
   // Carregar chats
   useEffect(() => {
@@ -30,7 +29,7 @@ function useChat(falarResposta) {
     }
     
     // Carregar memórias
-    const savedMemories = ImprovedMemoryService.getMemories();
+    const savedMemories = MemoryService.getMemories();
     setMemories(savedMemories);
   }, []);
   
@@ -77,18 +76,41 @@ function useChat(falarResposta) {
   
   // Excluir um chat
   const excluirChat = useCallback((chatId) => {
-    const chatRemovido = ChatService.deleteChat(chatId);
-    
-    // Atualizar estado dos chats
-    const chatsAtualizados = chats.filter(c => c.id !== chatId);
-    setChats(chatsAtualizados);
-    
-    // Se excluiu o chat atual, selecionar outro
-    if (chatAtual && chatAtual.id === chatId) {
-      setChatAtual(chatsAtualizados.length > 0 ? chatsAtualizados[0] : null);
+    if (!chatId) {
+      console.error('Tentativa de excluir chat sem fornecer ID');
+      return false;
     }
     
-    return chatRemovido;
+    try {
+      // Salvar referência ao chat atual antes da exclusão
+      const chatAtualId = chatAtual?.id;
+      
+      // Executar operação de exclusão
+      const chatRemovido = ChatService.deleteChat(chatId);
+      
+      if (!chatRemovido) {
+        console.warn(`Falha ao excluir chat ${chatId}`);
+        return false;
+      }
+      
+      // Atualizar estado dos chats
+      const chatsAtualizados = chats.filter(c => c.id !== chatId);
+      setChats(chatsAtualizados);
+      
+      // Se excluiu o chat atual, selecionar outro
+      if (chatAtualId === chatId) {
+        if (chatsAtualizados.length > 0) {
+          setChatAtual(chatsAtualizados[0]);
+        } else {
+          setChatAtual(null);
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Erro ao excluir chat:', error);
+      return false;
+    }
   }, [chats, chatAtual]);
   
   // Enviar pergunta para a API
@@ -130,7 +152,7 @@ function useChat(falarResposta) {
     setChats(prev => prev.map(c => c.id === chatAtual.id ? chatAtualizado : c));
     
     // Obter memórias relevantes para a pergunta
-    const memoriasRelevantes = ImprovedMemoryService.getRelevantMemories(perguntaFormatada);
+    const memoriasRelevantes = MemoryService.getRelevantMemories(perguntaFormatada);
     console.log('Memórias relevantes para a pergunta:', memoriasRelevantes);
     
     // Limpar input e mostrar loading
@@ -163,7 +185,7 @@ function useChat(falarResposta) {
       setTimeout(() => {
         // Verificar se chatAtualizado existe e tem a propriedade messages
         if (!chatAtualizado || !chatAtualizado.messages) {
-          console.error('Não foi possível adicionar resposta: chat é nulo ou não possui messages');
+          console.error('Chat atualizado é nulo ou não possui mensagens');
           setLoading(false);
           return;
         }
@@ -175,9 +197,19 @@ function useChat(falarResposta) {
           messages: [...chatAtualizado.messages, mensagemBot] 
         };
         
+        // Salvar chat atualizado
+        ChatService.saveChat(chatComResposta);
+        setChatAtual(chatComResposta);
+        setChats(prev => prev.map(c => c.id === chatAtualizado.id ? chatComResposta : c));
+        
+        // Falar a resposta se áudio estiver ativado
+        if (falarResposta) {
+          falarResposta(data.resposta);
+        }
+        
         // Extrair memórias da conversa e salvar
         // Usar toda a conversa para extrair informações mais completas
-        const novasMemoriasDaConversa = ImprovedMemoryService.extractMemoriesFromConversation(
+        const novasMemoriasDaConversa = MemoryService.extractMemoriesFromConversation(
           chatComResposta.messages
         );
         
@@ -185,21 +217,15 @@ function useChat(falarResposta) {
         
         // Salvar memórias relevantes
         novasMemoriasDaConversa.forEach(memory => {
-          ImprovedMemoryService.saveMemory(memory);
+          MemoryService.saveMemory(memory);
         });
         
         // Atualizar o estado das memórias
-        const memoriasAtualizadas = ImprovedMemoryService.getMemories();
+        const memoriasAtualizadas = MemoryService.getMemories();
         setMemories(memoriasAtualizadas);
         console.log('Estado atual de memórias:', memoriasAtualizadas);
         
-        // Salvar no localStorage e atualizar estado
-        ChatService.saveChat(chatComResposta);
-        setChatAtual(chatComResposta);
-        setChats(prev => prev.map(c => c.id === chatAtual.id ? chatComResposta : c));
-        
-        // Falar resposta e finalizar loading
-        falarResposta(data.resposta);
+        // Finalizar estado de loading
         setLoading(false);
       }, 300);
     } catch (error) {
@@ -207,40 +233,30 @@ function useChat(falarResposta) {
       
       // Adicionar mensagem de erro ao chat
       setTimeout(() => {
-        // Mensagem de erro mais detalhada baseada no tipo de erro
-        let mensagemTexto = 'Desculpe, ocorreu um erro ao gerar a resposta.';
-        
-        // Verificar se o erro está relacionado ao modelo
-        if (error.message && error.message.includes('model')) {
-          mensagemTexto = 'Desculpe, ocorreu um erro com o modelo de linguagem. Os administradores foram notificados.';
-        } else if (error.message && error.message.includes('500')) {
-          mensagemTexto = 'Desculpe, o servidor está enfrentando problemas temporários. Por favor, tente novamente em alguns instantes.';
-        } else if (error.message && error.message.includes('404')) {
-          mensagemTexto = 'Desculpe, não foi possível conectar ao serviço de IA. Verifique a configuração do chatbot.';
-        }
-        
-        // Verificar se chatAtualizado existe e tem a propriedade messages
-        if (!chatAtualizado || !chatAtualizado.messages) {
-          console.error('Não foi possível adicionar mensagem de erro: chat é nulo ou não possui messages');
+        // Verificar se chatAtual ainda existe (pode ter sido excluído enquanto carregava)
+        if (!chatAtual || !chatAtual.messages) {
+          console.error('Chat atual não está disponível para adicionar mensagem de erro');
           setLoading(false);
           return;
         }
         
+        // Adicionar mensagem de erro do sistema
         const mensagemErro = { 
           tipo: 'bot', 
-          texto: mensagemTexto
+          texto: `Desculpe, ocorreu um erro: ${error.message || 'Falha na comunicação com o servidor'}. Por favor, tente novamente.` 
         };
         
         const chatComErro = { 
-          ...chatAtualizado, 
-          messages: [...chatAtualizado.messages, mensagemErro] 
+          ...chatAtual, 
+          messages: [...chatAtual.messages, mensagemErro] 
         };
         
-        // Salvar no localStorage e atualizar estado
+        // Salvar chat com mensagem de erro
         ChatService.saveChat(chatComErro);
         setChatAtual(chatComErro);
         setChats(prev => prev.map(c => c.id === chatAtual.id ? chatComErro : c));
         
+        // Finalizar estado de loading
         setLoading(false);
       }, 300);
     }
@@ -253,6 +269,16 @@ function useChat(falarResposta) {
       enviarPergunta();
     }
   }, [enviarPergunta]);
+
+  // Adicionar um efeito para garantir que chatAtual seja válido
+  useEffect(() => {
+    // Se não há chats mas chatAtual ainda está definido, isso significa
+    // que todos os chats foram excluídos e precisamos redefinir chatAtual
+    if (chats.length === 0 && chatAtual !== null) {
+      console.log('Todos os chats foram removidos, redefinindo chatAtual para null');
+      setChatAtual(null);
+    }
+  }, [chats, chatAtual]);
 
   return {
     pergunta,

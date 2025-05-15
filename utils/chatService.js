@@ -97,41 +97,59 @@ const ChatService = {
 
   // Deleta um chat por ID
   deleteChat: (id) => {
-    let chats = ChatService.getChats();
-    chats = chats.filter(chat => chat.id !== id);
-    
-    // Se houver um usuário logado, usa uma chave específica para ele
-    const user = AuthService.getCurrentUser();
-    const storageKey = user?.id ? `chats_${user.id}` : 'chats';
-    
-    // Atualizar cache
-    chatsCache = chats;
-    
-    // Usar requestAnimationFrame para operações de escrita no localStorage
-    requestAnimationFrame(() => {
+    if (!id) {
+      console.error('ID de chat não fornecido para exclusão');
+      return false;
+    }
+
+    try {
+      let chats = ChatService.getChats();
+      const chatExistsBeforeDelete = chats.some(chat => chat.id === id);
+      
+      if (!chatExistsBeforeDelete) {
+        console.warn(`Chat com ID ${id} não encontrado para exclusão`);
+        return false;
+      }
+      
+      chats = chats.filter(chat => chat.id !== id);
+      
+      // Se houver um usuário logado, usa uma chave específica para ele
+      const user = AuthService.getCurrentUser();
+      const storageKey = user?.id ? `chats_${user.id}` : 'chats';
+      
+      // Atualizar cache
+      chatsCache = chats;
+      
+      // Usar requestAnimationFrame para operações de escrita no localStorage
       localStorage.setItem(storageKey, JSON.stringify(chats));
-    });
-    
-    return true;
+      
+      return true;
+    } catch (error) {
+      console.error('Erro ao excluir chat:', error);
+      return false;
+    }
   },
 
   // Deleta todos os chats
   deleteAllChats: () => {
     if (typeof window === 'undefined') return false;
     
-    // Se houver um usuário logado, usa uma chave específica para ele
-    const user = AuthService.getCurrentUser();
-    const storageKey = user?.id ? `chats_${user.id}` : 'chats';
-    
-    // Limpar cache
-    chatsCache = [];
-    
-    // Remover os chats do localStorage
-    requestAnimationFrame(() => {
-      localStorage.removeItem(storageKey);
-    });
-    
-    return true;
+    try {
+      // Se houver um usuário logado, usa uma chave específica para ele
+      const user = AuthService.getCurrentUser();
+      const storageKey = user?.id ? `chats_${user.id}` : 'chats';
+      
+      // Limpar cache
+      chatsCache = [];
+      
+      // Remover os chats do localStorage imediatamente
+      localStorage.setItem(storageKey, JSON.stringify([]));
+      
+      return true;
+    } catch (error) {
+      console.error('Erro ao excluir todos os chats:', error);
+      return false;
+    }
   },
 
   // Atualiza o título de um chat

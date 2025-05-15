@@ -1,40 +1,67 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# ChatBot
 
-## Getting Started
+Um chatbot interativo que utiliza memória contextual para personalizar as respostas, construído com Next.js e integrado com a API da Maritaca AI.
 
-First, run the development server:
+## Estrutura do Projeto
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+/ChatBot
+├── components/             # Componentes React reutilizáveis
+├── hooks/                  # Hooks personalizados
+├── pages/                  # Páginas e rotas da aplicação
+│   ├── api/                # API endpoints
+│   └── _app.js, index.js   # Configuração principal e página inicial
+├── public/                 # Arquivos estáticos
+├── scripts/                # Scripts utilitários
+├── styles/                 # Estilos CSS
+└── utils/                  # Serviços e funções utilitárias
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Principais Funcionalidades
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+- **Chatbot Inteligente**: Interface de chat com histórico de mensagens e memória contextual
+- **Autenticação Google**: Login com Google OAuth para salvar dados entre dispositivos
+- **Reconhecimento de Voz**: Entrada de perguntas por voz (onde suportado pelo navegador)
+- **Síntese de Voz**: Opção de leitura das respostas em voz alta
+- **Modo Escuro/Claro**: Tema adaptável às preferências do usuário
+- **Design Responsivo**: Interface otimizada para dispositivos móveis e desktop
+- **Memória Contextual**: O chatbot lembra informações pessoais para personalizar respostas
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+## Principais Componentes
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+- **ChatContainer**: Exibe as mensagens do chat atual
+- **UserMenu**: Menu de usuário com opções de login/logout e gerenciamento de dados
+- **MemoryPanel**: Painel lateral para visualizar as memórias aprendidas pelo chatbot
+- **Sidebar**: Barra lateral para seleção de conversas salvas
+- **DataManagement**: Interface para exportar e importar dados do usuário
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Principais Serviços
 
-## Learn More
+- **ChatService**: Gerencia o armazenamento e manipulação de conversas
+- **MemoryService**: Gerencia a extração, armazenamento e recuperação de memórias
+- **AuthService**: Gerencia a autenticação de usuários
 
-To learn more about Next.js, take a look at the following resources:
+## Hooks Personalizados
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **useChat**: Gerencia o estado e operações do chat
+- **useTheme**: Gerencia o tema claro/escuro
+- **useSpeechRecognition**: Gerencia o reconhecimento de voz
+- **useSpeechSynthesis**: Gerencia a síntese de voz
+- **useClickOutside**: Detecta cliques fora de elementos específicos
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Configuração
 
-## Deploy on Vercel
+1. Clone o repositório
+2. Instale as dependências com `npm install` ou `yarn`
+3. Configure as variáveis de ambiente em `.env.local` (use `.env.local.example` como base)
+4. Inicie o servidor de desenvolvimento com `npm run dev` ou `yarn dev`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Requisitos
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- Node.js 14+ 
+- API key da Maritaca AI 
+- Google OAuth Client ID (para funcionalidade de login)
+
+## Licença
+
+Projeto privado, uso não autorizado sem permissão.

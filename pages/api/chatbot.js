@@ -1,10 +1,13 @@
 import openai from 'openai';
 import { encode } from 'gpt-3-encoder';
 
+import { encode } from 'gpt-tokenizer';
+import { OpenAI } from 'openai';
+
 /**
  * Configuração da API client
  */
-const client = new openai.OpenAI({
+const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
     baseURL: "https://chat.maritaca.ai/api",
 });
@@ -76,6 +79,102 @@ const consultarAPI = async (pergunta, memoriasRelevantes = []) => {
             // Log para depuração
             console.log("Usando memórias na API:", memoriasRelevantes);
         }
+        
+        // Instruções para a personalidade do chatbot
+        const sistemaPrompt = `Você é um assistente virtual amigável e prestativo.
+        
+${contextoMemoria}
+
+Mantenha suas respostas concisas mas completas, focando em ser útil e informativo.
+Use um tom conversacional, amigável e respeitoso.
+Se não souber a resposta para algo, seja honesto em vez de inventar informações.
+Evite ser repetitivo nas suas respostas.
+O idioma principal da conversa é o português brasileiro.`;
+
+        // Verificar se o sistema prompt não é muito grande
+        const tokenCountSistema = contarTokens(sistemaPrompt);
+        const tokenCountPergunta = contarTokens(pergunta);
+        console.log(`Tokens - Sistema: ${tokenCountSistema}, Pergunta: ${tokenCountPergunta}`);
+        
+        // Obter resposta da API
+        const response = await client.chat.completions.create({
+            model: "sabia-3-small",
+            temperature: 0.7,
+            max_tokens: 800,
+            messages: [
+                { role: "system", content: sistemaPrompt },
+                { role: "user", content: pergunta }
+            ]
+        });
+        
+        // Extrair e retornar a resposta
+        if (response.choices && response.choices.length > 0) {
+            const resposta = response.choices[0].message.content.trim();
+            console.log("Resposta da API:", resposta.substring(0, 100) + "...");
+            return resposta;
+        } else {
+            throw new Error("Resposta vazia da API");
+        }
+    } catch (error) {
+        console.error("Erro ao consultar API:", error);
+        
+        // Formatar o erro de forma mais amigável
+        const errorMessage = error.message || "Erro desconhecido";
+        const formattedError = 
+            errorMessage.includes('model') ? 
+                "Modelo de linguagem não disponível ou desatualizado" : 
+                errorMessage;
+                
+        throw new Error(formattedError);
+    }
+};
+
+/**
+ * Handler para o endpoint /api/chatbot
+ */
+export default async function handler(req, res) {
+    // Apenas aceitar método POST
+    if (req.method !== 'POST') {
+        return res.status(405).json({ mensagem: 'Método não permitido' });
+    }
+    
+    try {
+        const { pergunta, memoriasRelevantes } = req.body;
+        
+        // Validar parâmetros
+        if (!pergunta || typeof pergunta !== 'string') {
+            return res.status(400).json({ mensagem: 'Pergunta inválida' });
+        }
+        
+        // Consultar a API
+        const resposta = await consultarAPI(pergunta, memoriasRelevantes);
+        
+        // Retornar resposta
+        return res.status(200).json({ resposta });
+    } catch (error) {
+        console.error('Erro no servidor:', error);
+        
+        // Gerar uma mensagem de erro mais útil
+        let errorMessage = 'Erro ao processar a pergunta';
+        let detailedError = error.message;
+        
+        // Verificar o tipo de erro para mensagens mais específicas
+        if (error.message && error.message.includes('model')) {
+            errorMessage = 'Erro no modelo de IA';
+            // Registrar informações adicionais para diagnóstico
+            console.error('Detalhes do erro de modelo:', {
+                baseURL: client.baseURL,
+                apiKey: process.env.OPENAI_API_KEY ? 'Presente' : 'Ausente',
+                modeloSolicitado: 'sabia-3-small'
+            });
+        }
+        
+        return res.status(500).json({ 
+            mensagem: errorMessage,
+            erro: detailedError
+        });
+    }
+}
         
         // Instruções para a personalidade do chatbot
         const sistemaPrompt = `Você é um assistente virtual amigável e prestativo.

@@ -1,23 +1,24 @@
-import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FaPlus, FaBrain } from 'react-icons/fa';
+import dynamic from 'next/dynamic';
 
 // Custom Hooks
 import useTheme from '../hooks/useTheme';
-import useSpeechSynthesis from '../hooks/useSpeechSynthesis';
-import useSpeechRecognition from '../hooks/useSpeechRecognition';
 import useChat from '../hooks/useChat';
+import useSpeechRecognition from '../hooks/useSpeechRecognition';
+import useSpeechSynthesis from '../hooks/useSpeechSynthesis';
 
 // Componentes
+import Header from '../components/Header';
 import ChatContainer from '../components/ChatContainer';
 import ChatInput from '../components/ChatInput';
-import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import MemoryPanel from '../components/MemoryPanel';
 
 // Serviços
 import AuthService from '../utils/authService';
-import ImprovedMemoryService from '../utils/improvedMemoryService';
+import MemoryService from '../utils/memoryService';
 
 // Carregamento preguiçoso de componentes
 const LoginScreen = lazy(() => import('../components/LoginScreen'));
@@ -219,6 +220,21 @@ export default function Home() {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  // Verificar se o usuário está logado, impedindo operações enquanto carrega
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (loading) {
+        // Impedir fechamento da página durante carregamento
+        e.preventDefault();
+        e.returnValue = ''; // Necessário para compatibilidade com navegadores
+        return '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [loading]);
 
   // Renderiza um placeholder durante SSR/antes da hidratação
   if (!mounted || checkingAuth) {
