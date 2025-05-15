@@ -2,11 +2,17 @@ import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { FaCloudUploadAlt, FaCloudDownloadAlt, FaTimes, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
 import DataExportService from '../utils/dataExportService';
+import useClickOutside from '../hooks/useClickOutside';
 
 const DataManagement = ({ onComplete }) => {
   const [isImporting, setIsImporting] = useState(false);
   const [importStatus, setImportStatus] = useState(null);
   const fileInputRef = useRef(null);
+  
+  // Adicionar clickOutside para fechar o modal quando clicar fora
+  const modalRef = useClickOutside(() => {
+    if (onComplete) onComplete(false);
+  });
 
   const handleExport = () => {
     const success = DataExportService.exportUserData();
@@ -75,6 +81,7 @@ const DataManagement = ({ onComplete }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-md w-[95%] sm:w-full mobile-modal overflow-hidden flex flex-col"
+      ref={modalRef}
     >
       <div className="flex justify-between items-center mb-3 sm:mb-6">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white">

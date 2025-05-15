@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { FaBrain, FaTimes } from 'react-icons/fa';
+import useClickOutside from '../hooks/useClickOutside';
 
 const MemoryPanel = ({ memories, toggleMemoryPanel, deleteMemory }) => {
+  // Adicionar referência para detectar cliques fora do painel
+  const panelRef = useClickOutside(() => {
+    toggleMemoryPanel();
+  });
+
   if (!memories || memories.length === 0) {
     return (
       <motion.div
@@ -48,6 +54,7 @@ const MemoryPanel = ({ memories, toggleMemoryPanel, deleteMemory }) => {
       exit={{ opacity: 0, x: 300 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
       className="fixed top-0 right-0 h-full w-[85%] sm:w-80 bg-white dark:bg-gray-800 shadow-xl z-50 border-l border-gray-200 dark:border-gray-700 overflow-y-auto"
+      ref={panelRef}
     >
       <div className="p-3 sm:p-4 h-full flex flex-col">
         <div className="flex items-center justify-between mb-3 sm:mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">

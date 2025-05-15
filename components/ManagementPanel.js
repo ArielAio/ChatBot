@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaTrash, FaEdit, FaSave, FaChevronLeft, FaChevronRight, FaRegSave, FaMicrochip, FaRobot, FaComments, FaBrain } from 'react-icons/fa';
 import ChatService from '../utils/chatService';
 import MemoryService from '../utils/memoryService';
+import useClickOutside from '../hooks/useClickOutside';
 
 const ManagementPanel = ({ onClose, user }) => {
   const [activeTab, setActiveTab] = useState('chats');
@@ -11,6 +12,11 @@ const ManagementPanel = ({ onClose, user }) => {
   const [editingChatId, setEditingChatId] = useState(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [confirmAction, setConfirmAction] = useState(null);
+  
+  // Referência para fechar o painel quando clicar fora dele
+  const panelRef = useClickOutside(() => {
+    if (onClose) onClose(false);
+  });
 
   useEffect(() => {
     loadData();
@@ -84,6 +90,11 @@ const ManagementPanel = ({ onClose, user }) => {
   const renderConfirmationDialog = () => {
     if (!confirmAction) return null;
 
+    // Cria uma ref para a caixa de confirmação
+    const confirmDialogRef = useClickOutside(() => {
+      setConfirmAction(null);
+    });
+
     let message, confirmFunc;
     const { action, itemName } = confirmAction;
 
@@ -115,6 +126,7 @@ const ManagementPanel = ({ onClose, user }) => {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl w-[90%] max-w-sm shadow-xl mobile-modal"
+          ref={confirmDialogRef}
         >
           <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-gray-800 dark:text-white">Confirmar ação</h3>
           <p className="text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base">{message}</p>
@@ -295,6 +307,7 @@ const ManagementPanel = ({ onClose, user }) => {
         initial={{ y: 20 }}
         animate={{ y: 0 }}
         className="bg-gray-100 dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col"
+        ref={panelRef}
       >
         <div className="flex justify-between items-center p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 safe-top">
           <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">

@@ -4,6 +4,7 @@ import { FaUserCircle, FaSignOutAlt, FaUser, FaCog, FaDownload, FaDatabase, FaTo
 import AuthService from '../utils/authService';
 import DataManagement from './DataManagement';
 import ManagementPanel from './ManagementPanel';
+import useClickOutside from '../hooks/useClickOutside';
 
 const UserMenu = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +26,11 @@ const UserMenu = ({ user, onLogout }) => {
   }, []);
   
   const toggleMenu = () => setIsOpen(!isOpen);
+  
+  // Referência para o dropdown do menu que fecha ao clicar fora
+  const menuRef = useClickOutside(() => {
+    if (isOpen) setIsOpen(false);
+  }, isOpen);
   
   const handleLogout = () => {
     if (confirm('Tem certeza que deseja sair? Suas conversas e memórias continuarão disponíveis neste dispositivo.')) {
@@ -86,6 +92,7 @@ const UserMenu = ({ user, onLogout }) => {
             transition={{ duration: 0.2 }}
             className="fixed sm:absolute right-0 left-0 sm:left-auto top-0 sm:top-auto mt-0 sm:mt-2 w-full sm:w-64 sm:max-w-[18rem] bg-white dark:bg-gray-800 shadow-lg rounded-none sm:rounded-lg overflow-hidden z-50 border-b sm:border border-gray-200 dark:border-gray-700 sm:right-0 safe-top mobile-menu-container"
             style={{height: isMobile ? 'calc(100% - env(safe-area-inset-bottom))' : 'auto'}}
+            ref={menuRef}
           >
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <div className="flex items-center flex-1 overflow-hidden">
