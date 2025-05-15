@@ -65,11 +65,23 @@ const Header = ({
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={toggleMute}
-          className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          className={`p-2 rounded-full ${mute 
+            ? 'bg-gray-200 dark:bg-gray-600' 
+            : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+          } transition-colors`}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              toggleMute();
+            }
+          }}
+          tabIndex={0}
+          role="button"
+          aria-pressed={mute}
           aria-label={mute ? 'Ativar som' : 'Desativar som'}
         >
           {mute ? 
-            <FaVolumeMute className="text-gray-600 dark:text-gray-300" size={18} /> : 
+            <FaVolumeMute className="text-red-500 dark:text-red-400" size={18} /> : 
             <FaVolumeUp className="text-gray-600 dark:text-gray-300" size={18} />
           }
         </motion.button>
