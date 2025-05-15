@@ -1,7 +1,41 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { FaMicrophone, FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
+import { FaMicrophone, FaVolumeMute, FaVolumeUp, FaSun, FaMoon } from 'react-icons/fa';
+
+function useTheme() {
+  const [theme, setTheme] = useState(() => {
+    // Executar apenas no cliente
+    if (typeof window !== 'undefined') {
+      // Verificar localStorage
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+      
+      // Verificar preferência do sistema
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+      return 'light';
+    }
+    return 'light';
+  });
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Atualizar o DOM e localStorage
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(theme);
+      localStorage.setItem('theme', theme);
+    }
+  }, [theme]);
+  
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => (t === 'light' ? 'dark' : 'light'));
+  }, []);
+  
+  return [theme, toggleTheme];
+}
 
 export default function Home() {
+  const [theme, toggleTheme] = useTheme();
   const [pergunta, setPergunta] = useState('');
   const [conversas, setConversas] = useState([{ tipo: 'bot', texto: 'Olá! Como posso ajudar você hoje?' }]);
   const [reconhecedor, setReconhecedor] = useState(null);
@@ -86,21 +120,25 @@ export default function Home() {
   const toggleMute = useCallback(() => setMute((m) => !m), []);
 
   useEffect(() => {
-    // Forçar dark mode no html
-    document.documentElement.classList.add('dark');
-    document.documentElement.classList.remove('light');
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversas, loading]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 transition-colors duration-500 p-4">
-      <div className="bg-gray-800 w-full max-w-xl p-6 rounded-2xl shadow-2xl flex flex-col h-full max-h-[80vh] transition-colors duration-500">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-500 p-4">
+      <div className="bg-white dark:bg-gray-800 w-full max-w-xl p-6 rounded-2xl shadow-2xl flex flex-col h-full max-h-[80vh] transition-colors duration-500">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-semibold text-gray-100 tracking-tight">Chatbot</h1>
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 tracking-tight">Chatbot</h1>
           <div className="flex items-center gap-2">
             <button
+              onClick={toggleTheme}
+              aria-label="Alternar tema"
+              className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+            >
+              {theme === 'dark' ? <FaSun className="text-yellow-400" /> : <FaMoon className="text-gray-700" />}
+            </button>
+            <button
               onClick={toggleMute}
-              className="p-2 text-gray-300 hover:text-white transition-colors duration-200"
+              className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors duration-200"
               aria-label={mute ? 'Ativar som' : 'Desativar som'}
             >
               {mute ? <FaVolumeMute size={20} /> : <FaVolumeUp size={20} />}
@@ -108,7 +146,7 @@ export default function Home() {
           </div>
         </div>
         {/* Janela de Chat */}
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-800 rounded-lg shadow-inner transition-colors duration-500">
+        <div className="flex-1 overflow-y-auto p-4 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-inner transition-colors duration-500">
           {conversas.map((conversa, index) => (
             <div
               key={index}

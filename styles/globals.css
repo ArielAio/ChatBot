@@ -2,13 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-:root.light {
-  --background: #ffffff;
-  --foreground: #171717;
+html.light {
+  --background: #f7fafc;
+  --foreground: #1a202c;
+  --chat-bg: #fff;
+  --chat-bot: #e2e8f0;
+  --chat-user: #3182ce;
+  --chat-user-text: #fff;
+  --input-bg: #f1f5f9;
+  --input-border: #cbd5e1;
+  --footer: #64748b;
 }
-:root.dark {
+html.dark {
   --background: #0a0a0a;
   --foreground: #ededed;
+  --chat-bg: #1a1a1a;
+  --chat-bot: #374151;
+  --chat-user: #2563eb;
+  --chat-user-text: #fff;
+  --input-bg: #23272f;
+  --input-border: #374151;
+  --footer: #94a3b8;
 }
 
 body {
@@ -16,6 +30,28 @@ body {
   background: var(--background);
   color: var(--foreground);
   transition: background 0.3s, color 0.3s;
+}
+
+/* Chat window and message bubbles */
+.bg-chat {
+  background: var(--chat-bg) !important;
+}
+.bg-bot {
+  background: var(--chat-bot) !important;
+  color: var(--foreground) !important;
+}
+.bg-user {
+  background: var(--chat-user) !important;
+  color: var(--chat-user-text) !important;
+}
+.bg-input {
+  background: var(--input-bg) !important;
+}
+.border-input {
+  border-color: var(--input-border) !important;
+}
+.text-footer {
+  color: var(--footer) !important;
 }
 
 @layer utilities {
